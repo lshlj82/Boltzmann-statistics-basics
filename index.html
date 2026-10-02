@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Sang Hoon Lee (Gyeongsang National University); demo created by Claude Opus 5.5">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Boltzmann statistics — an interactive companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400;1,8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFBF8; --grid:rgba(60,100,160,.09); --ink:#1D2944; --ink2:#5A6580; --rule:#C9D0DD;
+  --panel:#FFFFFF;
+  --hl-green:#8BF28B; --hl-pink:#FF8DEE; --hl-cyan:#AEEFFF; --hl-peach:#FFCB8E;
+  --red:#D3242C; --blue:#2B44DD; --green:#1B9A2C; --purple:#7B2C9C;
+  --bar:#2B44DD; --bar2:#D3242C;
+  --serif:"Source Serif 4", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans:"IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#172031; --grid:rgba(190,210,255,.055); --ink:#E5EBF6; --ink2:#9CA8BF; --rule:#34405A;
+    --panel:#1D2739;
+    --hl-green:#3E9C4A; --hl-pink:#B24CA4; --hl-cyan:#2F7C93; --hl-peach:#A86C2C;
+    --red:#FF7272; --blue:#93A8FF; --green:#72E07E; --purple:#D490F2;
+    --bar:#93A8FF; --bar2:#FF7272;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#172031; --grid:rgba(190,210,255,.055); --ink:#E5EBF6; --ink2:#9CA8BF; --rule:#34405A;
+  --panel:#1D2739;
+  --hl-green:#3E9C4A; --hl-pink:#B24CA4; --hl-cyan:#2F7C93; --hl-peach:#A86C2C;
+  --red:#FF7272; --blue:#93A8FF; --green:#72E07E; --purple:#D490F2;
+  --bar:#93A8FF; --bar2:#FF7272;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:var(--serif); font-size:18px; line-height:1.62;
+  -webkit-text-size-adjust:100%;
+}
+main{max-width:1060px; margin:0 auto; padding:40px 22px 80px}
+.prose{max-width:690px}
+h1{font-weight:600; font-size:clamp(2.2rem,6vw,3.4rem); line-height:1.08; margin:0 0 .3em; letter-spacing:-.01em}
+h2{font-weight:600; font-size:1.6rem; line-height:1.2; margin:0 0 .5em; display:inline-block;
+   background:linear-gradient(transparent 58%, var(--hl-green) 58%, var(--hl-green) 92%, transparent 92%);
+   padding:0 .15em; margin-left:-.15em}
+h2 .num{font-family:var(--sans); font-weight:500; font-size:.8em; margin-right:.55em; color:var(--ink2); font-variant-numeric:tabular-nums}
+h3{font-size:1.15rem; font-weight:600; margin:1.6em 0 .4em}
+p{margin:0 0 1em}
+section{margin-top:84px}
+.kicker{font-family:var(--sans); font-size:.95rem; color:var(--ink2); margin:0 0 .6em}
+.ink-red{color:var(--red)} .ink-blue{color:var(--blue)} .ink-green{color:var(--green)} .ink-purple{color:var(--purple)}
+.m{font-style:italic; white-space:nowrap}
+.hl-pink{background:linear-gradient(transparent 55%, var(--hl-pink) 55%, var(--hl-pink) 90%, transparent 90%)}
+.hl-peach{background:linear-gradient(transparent 55%, var(--hl-peach) 55%, var(--hl-peach) 90%, transparent 90%)}
+.hero{display:grid; grid-template-columns:1fr auto; gap:28px; align-items:end}
+.tomb{font-size:1.7rem; color:var(--ink2); white-space:nowrap; padding-bottom:12px; font-style:italic}
+.lede{font-size:1.15rem; max-width:640px}
+.margin-note{font-style:italic; color:var(--purple); border-left:3px solid var(--hl-pink); padding-left:14px}
+/* formula boxes, as in the notes */
+.fbox{display:inline-block; padding:.45em .9em; border-radius:12px; border:6px solid var(--hl-pink); background:var(--panel); font-size:1.12rem; margin:.3em 0 1em}
+.fbox.green{border-color:var(--hl-green)} .fbox.cyan{border-color:var(--hl-cyan)}
+.frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 .15em; line-height:1.2}
+.frac>span:first-child{border-bottom:1.3px solid currentColor; padding:0 .2em}
+sup,sub{line-height:0}
+/* interactive panels */
+.lab{border:1.5px solid var(--ink); border-radius:4px; background:var(--panel); padding:18px 20px 20px; margin:18px 0 10px}
+.lab-head{display:flex; flex-wrap:wrap; gap:8px 18px; align-items:baseline; justify-content:space-between; margin-bottom:10px}
+.lab-title{font-family:var(--sans); font-weight:600; font-size:1rem}
+.cols{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:22px}
+.cols.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+canvas{display:block; width:100%; max-width:100%}
+.controls{display:flex; flex-direction:column; gap:14px}
+.ctl label{font-family:var(--sans); display:flex; justify-content:space-between; gap:10px; font-size:.95rem}
+.ctl output{font-variant-numeric:tabular-nums; font-weight:600}
+input[type=range]{width:100%; accent-color:var(--blue); margin:6px 0 0}
+.btns{display:flex; flex-wrap:wrap; gap:8px}
+button{font:inherit; font-family:var(--sans); font-size:.92rem; color:var(--ink); background:transparent; border:1.5px solid var(--ink); border-radius:999px; padding:.3em .95em; cursor:pointer}
+button:hover{background:var(--hl-cyan)}
+button[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--blue); outline-offset:2px}
+select{font:inherit; font-family:var(--sans); font-size:.95rem; color:var(--ink); background:var(--panel); border:1.5px solid var(--ink); border-radius:4px; padding:.25em .5em}
+.readout{font-family:var(--sans); font-variant-numeric:tabular-nums; font-size:.92rem}
+.readout div{display:flex; justify-content:space-between; gap:12px; border-bottom:1px dashed var(--rule); padding:3px 0}
+.readout div b{font-weight:600}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:.93rem; width:100%}
+th,td{padding:4px 10px; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap}
+th{font-weight:600; border-bottom:1.5px solid var(--ink)}
+td:first-child,th:first-child{text-align:left}
+.caption{font-family:var(--sans); font-size:.88rem; color:var(--ink2); margin-top:8px}
+.key{display:inline-flex; align-items:center; gap:6px; font-size:.9rem; margin-right:14px}
+.sw{width:14px; height:10px; display:inline-block; border-radius:2px}
+.compare{display:grid; grid-template-columns:1fr 1fr; gap:0; border:1.5px solid var(--ink); border-radius:4px; background:var(--panel); margin:18px 0}
+.compare>div{padding:16px 18px}
+.compare>div+div{border-left:1.5px solid var(--ink)}
+.compare h4{margin:0 0 .3em; font-size:1.02rem}
+.illus{margin:22px 0 10px}
+.illus svg{display:block; width:100%; height:auto; max-width:900px}
+.illus .box-outer{fill:var(--rule); fill-opacity:.35; stroke:var(--ink); stroke-width:1.2}
+.illus .box-inner{fill:var(--panel); stroke:var(--ink); stroke-width:1}
+.illus .sysbox{fill:var(--panel)}
+.illus .neck{fill:var(--panel)}
+.illus .osc-well{fill:none; stroke:var(--ink2); stroke-width:1.3}
+.illus .osc-lvl{stroke:var(--ink2); stroke-width:1; stroke-opacity:.6}
+.illus .osc-lvl.strong{stroke:var(--ink); stroke-opacity:.85; stroke-width:1.4}
+.illus .osc-ball{fill:var(--bar)}
+.illus .osc-ball.sys{fill:var(--hl-pink); stroke:var(--ink); stroke-width:1.2}
+.illus .wave{fill:none; stroke:var(--red); stroke-width:1.6}
+.illus .arrowhead{fill:var(--red)}
+.illus text{fill:var(--ink); font-family:var(--sans)}
+.illus .svg-h{font-size:15px; font-weight:600}
+.illus .svg-sm{font-size:12.5px; fill:var(--ink2)}
+.illus .svg-sm.center{text-anchor:middle; fill:var(--red)}
+.illus .sub{font-size:9.5px}
+.illus .svg-note{font-size:12.5px; fill:var(--purple); font-style:italic}
+footer{margin-top:90px; color:var(--ink2); font-size:.92rem; max-width:690px}
+@media (max-width:760px){
+  body{font-size:17px}
+  .cols,.cols.even,.compare{grid-template-columns:1fr}
+  .compare>div+div{border-left:0; border-top:1.5px solid var(--ink)}
+  .hero{grid-template-columns:1fr}
+  .tomb{font-size:1.4rem}
+  .lab{padding:14px}
+}
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <div>
+    <p class="kicker">Statistical Physics II, Chapter 6. Based on lecture notes by Prof. Sang Hoon Lee, Gyeongsang National University.</p>
+    <h1>Boltzmann statistics</h1>
+    <p class="lede">An interactive companion to the lecture notes. Each section below follows the notes in order: from a system that is completely isolated, to one that trades energy with a reservoir, to the Boltzmann factor, the partition function, average values and fluctuations.</p>
+  </div>
+  <div class="tomb" aria-hidden="true">S = k<sub>B</sub> ln Ω</div>
+</header>
+
+<!-- ============ 6.0 ============ -->
+<section id="isolated">
+  <h2><span class="num">6.0</span>Isolated vs. in contact with a reservoir</h2>
+  <div class="prose">
+    <p>Last semester, we counted the multiplicity <span class="m">Ω(U, V, N)</span> directly and got everything else from <span class="m">S = k<sub>B</sub> ln Ω</span>. For more complicated systems this is prohibitively difficult, so we trade generality for power: we study a system <span class="hl-peach">in thermal equilibrium with a reservoir at a specific temperature</span>.</p>
+  </div>
+  <div class="compare">
+    <div>
+      <h4>Isolated atom</h4>
+      <p style="margin:0">Its energy is fixed. All microstates with that energy are equally probable — the fundamental assumption, like a fair coin toss.</p>
+    </div>
+    <div>
+      <h4>Atom + reservoir</h4>
+      <p style="margin:0">The atom can be found in any of its microstates, but <span class="hl-pink">some are more likely than others, depending on their energies</span>. Only the composite (atom + reservoir) is isolated.</p>
+    </div>
+  </div>
+
+  <figure class="illus" aria-label="Illustration: one oscillator (the system) exchanging energy with a reservoir made of many oscillators">
+  <svg viewBox="0 0 760 330" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>One oscillator in thermal contact with a reservoir of many oscillators</title>
+    <rect class="box-outer" x="8" y="22" width="436" height="270" rx="2"/>
+    <rect class="box-inner" x="16" y="30" width="420" height="254" rx="1"/>
+    <text class="svg-h" x="28" y="54">Reservoir: N oscillators</text>
+    <path class="osc-well" d="M32,64 Q52,112 72,64"/><line class="osc-lvl" x1="44.4" y1="84.6" x2="59.6" y2="84.6"/><line class="osc-lvl" x1="38.9" y1="77.7" x2="65.1" y2="77.7"/><line class="osc-lvl" x1="35.1" y1="70.9" x2="68.9" y2="70.9"/><circle class="osc-ball" cx="52" cy="81.4" r="3.2"/><path class="osc-well" d="M82,64 Q102,112 122,64"/><line class="osc-lvl" x1="94.4" y1="84.6" x2="109.6" y2="84.6"/><line class="osc-lvl" x1="88.9" y1="77.7" x2="115.1" y2="77.7"/><line class="osc-lvl" x1="85.1" y1="70.9" x2="118.9" y2="70.9"/><circle class="osc-ball" cx="102" cy="81.4" r="3.2"/><path class="osc-well" d="M132,64 Q152,112 172,64"/><line class="osc-lvl" x1="144.4" y1="84.6" x2="159.6" y2="84.6"/><line class="osc-lvl" x1="138.9" y1="77.7" x2="165.1" y2="77.7"/><line class="osc-lvl" x1="135.1" y1="70.9" x2="168.9" y2="70.9"/><circle class="osc-ball" cx="152" cy="74.5" r="3.2"/><path class="osc-well" d="M182,64 Q202,112 222,64"/><line class="osc-lvl" x1="194.4" y1="84.6" x2="209.6" y2="84.6"/><line class="osc-lvl" x1="188.9" y1="77.7" x2="215.1" y2="77.7"/><line class="osc-lvl" x1="185.1" y1="70.9" x2="218.9" y2="70.9"/><circle class="osc-ball" cx="202" cy="67.7" r="3.2"/><path class="osc-well" d="M232,64 Q252,112 272,64"/><line class="osc-lvl" x1="244.4" y1="84.6" x2="259.6" y2="84.6"/><line class="osc-lvl" x1="238.9" y1="77.7" x2="265.1" y2="77.7"/><line class="osc-lvl" x1="235.1" y1="70.9" x2="268.9" y2="70.9"/><circle class="osc-ball" cx="252" cy="81.4" r="3.2"/><path class="osc-well" d="M282,64 Q302,112 322,64"/><line class="osc-lvl" x1="294.4" y1="84.6" x2="309.6" y2="84.6"/><line class="osc-lvl" x1="288.9" y1="77.7" x2="315.1" y2="77.7"/><line class="osc-lvl" x1="285.1" y1="70.9" x2="318.9" y2="70.9"/><circle class="osc-ball" cx="302" cy="81.4" r="3.2"/><path class="osc-well" d="M332,64 Q352,112 372,64"/><line class="osc-lvl" x1="344.4" y1="84.6" x2="359.6" y2="84.6"/><line class="osc-lvl" x1="338.9" y1="77.7" x2="365.1" y2="77.7"/><line class="osc-lvl" x1="335.1" y1="70.9" x2="368.9" y2="70.9"/><circle class="osc-ball" cx="352" cy="74.5" r="3.2"/><path class="osc-well" d="M32,116 Q52,164 72,116"/><line class="osc-lvl" x1="44.4" y1="136.6" x2="59.6" y2="136.6"/><line class="osc-lvl" x1="38.9" y1="129.7" x2="65.1" y2="129.7"/><line class="osc-lvl" x1="35.1" y1="122.9" x2="68.9" y2="122.9"/><circle class="osc-ball" cx="52" cy="133.4" r="3.2"/><path class="osc-well" d="M82,116 Q102,164 122,116"/><line class="osc-lvl" x1="94.4" y1="136.6" x2="109.6" y2="136.6"/><line class="osc-lvl" x1="88.9" y1="129.7" x2="115.1" y2="129.7"/><line class="osc-lvl" x1="85.1" y1="122.9" x2="118.9" y2="122.9"/><circle class="osc-ball" cx="102" cy="126.5" r="3.2"/><path class="osc-well" d="M132,116 Q152,164 172,116"/><line class="osc-lvl" x1="144.4" y1="136.6" x2="159.6" y2="136.6"/><line class="osc-lvl" x1="138.9" y1="129.7" x2="165.1" y2="129.7"/><line class="osc-lvl" x1="135.1" y1="122.9" x2="168.9" y2="122.9"/><circle class="osc-ball" cx="152" cy="133.4" r="3.2"/><path class="osc-well" d="M182,116 Q202,164 222,116"/><line class="osc-lvl" x1="194.4" y1="136.6" x2="209.6" y2="136.6"/><line class="osc-lvl" x1="188.9" y1="129.7" x2="215.1" y2="129.7"/><line class="osc-lvl" x1="185.1" y1="122.9" x2="218.9" y2="122.9"/><circle class="osc-ball" cx="202" cy="126.5" r="3.2"/><path class="osc-well" d="M232,116 Q252,164 272,116"/><line class="osc-lvl" x1="244.4" y1="136.6" x2="259.6" y2="136.6"/><line class="osc-lvl" x1="238.9" y1="129.7" x2="265.1" y2="129.7"/><line class="osc-lvl" x1="235.1" y1="122.9" x2="268.9" y2="122.9"/><circle class="osc-ball" cx="252" cy="133.4" r="3.2"/><path class="osc-well" d="M282,116 Q302,164 322,116"/><line class="osc-lvl" x1="294.4" y1="136.6" x2="309.6" y2="136.6"/><line class="osc-lvl" x1="288.9" y1="129.7" x2="315.1" y2="129.7"/><line class="osc-lvl" x1="285.1" y1="122.9" x2="318.9" y2="122.9"/><circle class="osc-ball" cx="302" cy="133.4" r="3.2"/><path class="osc-well" d="M332,116 Q352,164 372,116"/><line class="osc-lvl" x1="344.4" y1="136.6" x2="359.6" y2="136.6"/><line class="osc-lvl" x1="338.9" y1="129.7" x2="365.1" y2="129.7"/><line class="osc-lvl" x1="335.1" y1="122.9" x2="368.9" y2="122.9"/><circle class="osc-ball" cx="352" cy="133.4" r="3.2"/><path class="osc-well" d="M32,168 Q52,216 72,168"/><line class="osc-lvl" x1="44.4" y1="188.6" x2="59.6" y2="188.6"/><line class="osc-lvl" x1="38.9" y1="181.7" x2="65.1" y2="181.7"/><line class="osc-lvl" x1="35.1" y1="174.9" x2="68.9" y2="174.9"/><circle class="osc-ball" cx="52" cy="178.5" r="3.2"/><path class="osc-well" d="M82,168 Q102,216 122,168"/><line class="osc-lvl" x1="94.4" y1="188.6" x2="109.6" y2="188.6"/><line class="osc-lvl" x1="88.9" y1="181.7" x2="115.1" y2="181.7"/><line class="osc-lvl" x1="85.1" y1="174.9" x2="118.9" y2="174.9"/><circle class="osc-ball" cx="102" cy="185.4" r="3.2"/><path class="osc-well" d="M132,168 Q152,216 172,168"/><line class="osc-lvl" x1="144.4" y1="188.6" x2="159.6" y2="188.6"/><line class="osc-lvl" x1="138.9" y1="181.7" x2="165.1" y2="181.7"/><line class="osc-lvl" x1="135.1" y1="174.9" x2="168.9" y2="174.9"/><circle class="osc-ball" cx="152" cy="185.4" r="3.2"/><path class="osc-well" d="M182,168 Q202,216 222,168"/><line class="osc-lvl" x1="194.4" y1="188.6" x2="209.6" y2="188.6"/><line class="osc-lvl" x1="188.9" y1="181.7" x2="215.1" y2="181.7"/><line class="osc-lvl" x1="185.1" y1="174.9" x2="218.9" y2="174.9"/><circle class="osc-ball" cx="202" cy="185.4" r="3.2"/><path class="osc-well" d="M232,168 Q252,216 272,168"/><line class="osc-lvl" x1="244.4" y1="188.6" x2="259.6" y2="188.6"/><line class="osc-lvl" x1="238.9" y1="181.7" x2="265.1" y2="181.7"/><line class="osc-lvl" x1="235.1" y1="174.9" x2="268.9" y2="174.9"/><circle class="osc-ball" cx="252" cy="178.5" r="3.2"/><path class="osc-well" d="M282,168 Q302,216 322,168"/><line class="osc-lvl" x1="294.4" y1="188.6" x2="309.6" y2="188.6"/><line class="osc-lvl" x1="288.9" y1="181.7" x2="315.1" y2="181.7"/><line class="osc-lvl" x1="285.1" y1="174.9" x2="318.9" y2="174.9"/><circle class="osc-ball" cx="302" cy="178.5" r="3.2"/><path class="osc-well" d="M332,168 Q352,216 372,168"/><line class="osc-lvl" x1="344.4" y1="188.6" x2="359.6" y2="188.6"/><line class="osc-lvl" x1="338.9" y1="181.7" x2="365.1" y2="181.7"/><line class="osc-lvl" x1="335.1" y1="174.9" x2="368.9" y2="174.9"/><circle class="osc-ball" cx="352" cy="185.4" r="3.2"/><path class="osc-well" d="M32,220 Q52,268 72,220"/><line class="osc-lvl" x1="44.4" y1="240.6" x2="59.6" y2="240.6"/><line class="osc-lvl" x1="38.9" y1="233.7" x2="65.1" y2="233.7"/><line class="osc-lvl" x1="35.1" y1="226.9" x2="68.9" y2="226.9"/><circle class="osc-ball" cx="52" cy="237.4" r="3.2"/><path class="osc-well" d="M82,220 Q102,268 122,220"/><line class="osc-lvl" x1="94.4" y1="240.6" x2="109.6" y2="240.6"/><line class="osc-lvl" x1="88.9" y1="233.7" x2="115.1" y2="233.7"/><line class="osc-lvl" x1="85.1" y1="226.9" x2="118.9" y2="226.9"/><circle class="osc-ball" cx="102" cy="237.4" r="3.2"/><path class="osc-well" d="M132,220 Q152,268 172,220"/><line class="osc-lvl" x1="144.4" y1="240.6" x2="159.6" y2="240.6"/><line class="osc-lvl" x1="138.9" y1="233.7" x2="165.1" y2="233.7"/><line class="osc-lvl" x1="135.1" y1="226.9" x2="168.9" y2="226.9"/><circle class="osc-ball" cx="152" cy="223.7" r="3.2"/><path class="osc-well" d="M182,220 Q202,268 222,220"/><line class="osc-lvl" x1="194.4" y1="240.6" x2="209.6" y2="240.6"/><line class="osc-lvl" x1="188.9" y1="233.7" x2="215.1" y2="233.7"/><line class="osc-lvl" x1="185.1" y1="226.9" x2="218.9" y2="226.9"/><circle class="osc-ball" cx="202" cy="223.7" r="3.2"/><path class="osc-well" d="M232,220 Q252,268 272,220"/><line class="osc-lvl" x1="244.4" y1="240.6" x2="259.6" y2="240.6"/><line class="osc-lvl" x1="238.9" y1="233.7" x2="265.1" y2="233.7"/><line class="osc-lvl" x1="235.1" y1="226.9" x2="268.9" y2="226.9"/><circle class="osc-ball" cx="252" cy="230.5" r="3.2"/><path class="osc-well" d="M282,220 Q302,268 322,220"/><line class="osc-lvl" x1="294.4" y1="240.6" x2="309.6" y2="240.6"/><line class="osc-lvl" x1="288.9" y1="233.7" x2="315.1" y2="233.7"/><line class="osc-lvl" x1="285.1" y1="226.9" x2="318.9" y2="226.9"/><circle class="osc-ball" cx="302" cy="237.4" r="3.2"/><path class="osc-well" d="M332,220 Q352,268 372,220"/><line class="osc-lvl" x1="344.4" y1="240.6" x2="359.6" y2="240.6"/><line class="osc-lvl" x1="338.9" y1="233.7" x2="365.1" y2="233.7"/><line class="osc-lvl" x1="335.1" y1="226.9" x2="368.9" y2="226.9"/><circle class="osc-ball" cx="352" cy="230.5" r="3.2"/>
+    <text class="svg-sm" x="28" y="272">energy U<tspan class="sub" dy="4">R</tspan><tspan dy="-4">, temperature T, multiplicity Ω</tspan><tspan class="sub" dy="4">R</tspan><tspan dy="-4">(U</tspan><tspan class="sub" dy="4">R</tspan><tspan dy="-4">)</tspan></text>
+    <rect class="box-outer" x="444" y="66" width="40" height="182"/>
+    <rect class="neck" x="430" y="74" width="62" height="166"/>
+    <rect class="box-outer" x="484" y="22" width="268" height="270" rx="2"/>
+    <rect class="box-inner sysbox" x="492" y="30" width="252" height="254" rx="1"/>
+    <text class="svg-h" x="504" y="54">System: one oscillator</text>
+    <path class="osc-well" d="M538,90 Q600,354 662,90"/><line class="osc-lvl strong" x1="581.3" y1="210.0" x2="618.7" y2="210.0"/><text class="svg-sm" x="626.7" y="214.0">0</text><line class="osc-lvl strong" x1="567.6" y1="186.0" x2="632.4" y2="186.0"/><text class="svg-sm" x="640.4" y="190.0">ε</text><line class="osc-lvl strong" x1="558.2" y1="162.0" x2="641.8" y2="162.0"/><text class="svg-sm" x="649.8" y="166.0">2ε</text><line class="osc-lvl strong" x1="550.5" y1="138.0" x2="649.5" y2="138.0"/><text class="svg-sm" x="657.5" y="142.0">3ε</text><line class="osc-lvl strong" x1="543.9" y1="114.0" x2="656.1" y2="114.0"/><text class="svg-sm" x="664.1" y="118.0">4ε</text><circle class="osc-ball sys" cx="600" cy="155.0" r="7"/>
+    <text class="svg-sm" x="504" y="272">energy E = nε, here n = 2</text>
+    <path class="wave" d="M398,138 q5,-6 10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0"/>
+    <path class="arrowhead" d="M500,138 l-9,-5 v10 z"/>
+    <path class="wave" d="M500,176 q-5,6 -10,0 t-10,0 t-10,0 t-10,0 t-10,0 t-10,0 t-10,0 t-10,0 t-10,0 t-10,0"/>
+    <path class="arrowhead" d="M398,176 l9,-5 v10 z"/>
+    <text class="svg-sm center" x="449" y="122">quanta ε</text>
+    <text class="svg-note" x="380" y="16" text-anchor="middle">The composite (system + reservoir) is isolated: every joint microstate is equally likely.</text>
+  </svg>
+  <figcaption class="caption">Each small well is one oscillator of the Einstein-solid reservoir, with its occupied level marked. Every quantum the system gains is taken from the reservoir, so P(n) ∝ Ω<sub>R</sub>(U<sub>total</sub> − nε).</figcaption>
+  </figure>
+  <div class="prose">
+    <p>Below, the “atom” is one quantum oscillator (energies 0, ε, 2ε, …) and the reservoir is an Einstein solid. Energy quanta hop at random between oscillators, which samples every microstate of the <em>composite</em> system with equal probability. Watch how often the atom (pink) holds 0, 1, 2, … quanta.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-title">Live: one atom exchanging quanta with a reservoir</span>
+      <div class="btns">
+        <button id="simPlay" aria-pressed="true">Pause</button>
+        <button id="simIso" aria-pressed="false">Isolate the atom</button>
+        <button id="simReset">Clear histogram</button>
+      </div>
+    </div>
+    <canvas id="simStrip" style="height:120px" aria-label="Quanta in each oscillator"></canvas>
+    <div class="cols" style="margin-top:14px">
+      <canvas id="simHist" style="height:240px" aria-label="Histogram of the atom's energy"></canvas>
+      <div class="controls">
+        <div class="ctl">
+          <label for="simN"><span>Reservoir size</span> <span><output id="simNo">80</output> oscillators</span></label>
+          <input type="range" id="simN" min="0" max="3" step="1" value="1">
+        </div>
+        <div class="ctl">
+          <label for="simQ"><span>Quanta per oscillator</span> <output id="simQo">1.0</output></label>
+          <input type="range" id="simQ" min="0.3" max="3" step="0.1" value="1">
+        </div>
+        <div class="readout" id="simRead"></div>
+        <div>
+          <span class="key"><span class="sw" style="background:var(--hl-pink)"></span>simulated</span>
+          <span class="key"><span class="sw" style="background:var(--ink)"></span>exact count Ω<sub>R</sub>(q−n)</span>
+        </div>
+      </div>
+    </div>
+    <p class="caption" id="simCap">When isolated, the atom keeps whatever energy it had; its histogram collapses to a single bar.</p>
+  </div>
+</section>
+
+<!-- ============ 6.1 ============ -->
+<section id="factor">
+  <h2><span class="num">6.1</span>The Boltzmann factor</h2>
+  <div class="prose">
+    <p>If the atom is in state <span class="m">s</span>, the reservoir has <span class="m">Ω<sub>R</sub>(s)</span> accessible states, all equally probable. When the atom sits lower, more energy is left for the reservoir, so <span class="m">Ω<sub>R</sub></span> is larger. Hence</p>
+    <div class="fbox green">
+      <span class="frac"><span>P(s<sub>2</sub>)</span><span>P(s<sub>1</sub>)</span></span> =
+      <span class="frac"><span>Ω<sub>R</sub>(s<sub>2</sub>)</span><span>Ω<sub>R</sub>(s<sub>1</sub>)</span></span> =
+      e<sup>[S<sub>R</sub>(s<sub>2</sub>)−S<sub>R</sub>(s<sub>1</sub>)]/k<sub>B</sub></sup> =
+      e<sup>−[E(s<sub>2</sub>)−E(s<sub>1</sub>)]/k<sub>B</sub>T</sup>
+    </div>
+    <p>using <span class="m">dS<sub>R</sub> = (dU<sub>R</sub> + P dV<sub>R</sub> − μ dN<sub>R</sub>)/T</span> with <span class="m">dU<sub>R</sub> = −dE</span>; the <span class="m">P dV</span> term is ~10<sup>−25</sup> J and there is no particle exchange in this chapter. Is the exponential exact? Only when the reservoir is truly large. Grow it and see.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head"><span class="lab-title">Exact counting vs. the Boltzmann factor</span></div>
+    <div class="cols">
+      <div>
+        <canvas id="growChart" style="height:250px" aria-label="Exact probabilities and Boltzmann prediction"></canvas>
+        <div style="margin-top:6px">
+          <span class="key"><span class="sw" style="background:var(--bar)"></span>exact, ∝ Ω<sub>R</sub>(q−n)</span>
+          <span class="key"><span class="sw" style="background:var(--red);border-radius:50%;width:10px"></span>(1/Z) e<sup>−nε/k<sub>B</sub>T</sup></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="ctl">
+          <label for="gN"><span>Reservoir oscillators</span> <output id="gNo">10</output></label>
+          <input type="range" id="gN" min="0" max="4" step="0.01" value="1">
+        </div>
+        <div class="ctl">
+          <label for="gQ"><span>Quanta per oscillator</span> <output id="gQo">1.0</output></label>
+          <input type="range" id="gQ" min="0.2" max="4" step="0.05" value="1">
+        </div>
+        <div class="readout" id="gRead"></div>
+      </div>
+    </div>
+    <div class="tbl-wrap" style="margin-top:14px"><table id="gTable"></table></div>
+    <p class="caption">Reservoir temperature from <span class="m">1/T = ∂S<sub>R</sub>/∂U<sub>R</sub></span>, which for an Einstein solid gives <span class="m">ε/k<sub>B</sub>T = ln(1 + N/q)</span>. With a handful of oscillators the curve misses; by a few thousand it is indistinguishable.</p>
+  </div>
+
+  <div class="prose">
+    <p>Each ratio is a ratio of simple exponentials, so every state carries a <strong>Boltzmann factor</strong> <span class="m">e<sup>−E(s)/k<sub>B</sub>T</sup></span>. Normalizing gives</p>
+    <div class="fbox">P(s) = <span class="frac"><span>1</span><span>Z</span></span> e<sup>−E(s)/k<sub>B</sub>T</sup></div>
+    <p class="margin-note">“the most useful formula in all of statistical mechanics. Memorize it.”</p>
+
+    <h3>Thermal excitation of hydrogen in a stellar atmosphere</h3>
+    <p>For hydrogen, <span class="m">E(s<sub>1</sub>) = −13.6 eV</span> and <span class="m">E(s<sub>2</sub>) = −3.4 eV</span>. The <span class="m">n = 2</span> level holds 4 independent states (neglecting spin), <span class="m">n = 3</span> holds 9: a level can be degenerate. Only atoms in <span class="m">n = 2</span> absorb the visible Balmer lines (656, 486, 434 nm).</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-title">Hydrogen populations at temperature T</span>
+      <div class="btns">
+        <button data-t="5800">The Sun, 5800 K</button>
+        <button data-t="9500">γ UMa, 9500 K</button>
+      </div>
+    </div>
+    <div class="cols">
+      <canvas id="hChart" style="height:300px" aria-label="Hydrogen energy levels with populations"></canvas>
+      <div class="controls">
+        <div class="ctl">
+          <label for="hT"><span>Temperature</span> <output id="hTo">5800 K</output></label>
+          <input type="range" id="hT" min="3.3" max="4.4" step="0.001" value="3.7634">
+        </div>
+        <div class="readout" id="hRead"></div>
+      </div>
+    </div>
+    <p class="caption">Bars use a logarithmic scale: each tick is a factor of 10 in population relative to the ground state. Ratios only; the full hydrogen partition function needs more care.</p>
+  </div>
+</section>
+
+<!-- ============ partition function ============ -->
+<section id="partition">
+  <h2><span class="num">6.1</span>The partition function</h2>
+  <div class="prose">
+    <p>Normalization <span class="m">Σ<sub>s</sub> P(s) = 1</span> fixes the constant:</p>
+    <div class="fbox">Z = Σ<sub>s</sub> e<sup>−E(s)/k<sub>B</sub>T</sup> <span class="ink-red">= sum of all Boltzmann factors</span></div>
+    <p>“Zustandssumme”, the sum over states. It is a <em>function</em> because it depends on <span class="m">T</span>, and it roughly counts how many states are accessible, each weighted by its probability. With the ground state at 0, <span class="m">Z → 1</span> as <span class="m">T → 0<sup>+</sup></span> and <span class="m">Z ≫ 1</span> at high <span class="m">T</span>. Shifting every energy by <span class="m">E<sub>0</sub></span> multiplies <span class="m">Z</span> by <span class="m">e<sup>−E<sub>0</sub>/k<sub>B</sub>T</sup></span>, an uninteresting factor that cancels in every probability.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-title">Explore Z for a few systems</span>
+      <select id="zSys" aria-label="System">
+        <option value="two">Two-state system (0, ε)</option>
+        <option value="toy">Toy atom (0, 4ε, 7ε)</option>
+        <option value="osc" selected>Harmonic oscillator (nε)</option>
+        <option value="hyd">Hydrogen-like levels, degeneracy n² (n ≤ 8)</option>
+      </select>
+    </div>
+    <div class="cols">
+      <div>
+        <canvas id="zChart" style="height:250px" aria-label="Boltzmann factors of each level"></canvas>
+        <canvas id="zT" style="height:150px;margin-top:10px" aria-label="Z as a function of temperature"></canvas>
+      </div>
+      <div class="controls">
+        <div class="ctl">
+          <label for="zkT"><span>k<sub>B</sub>T / ε</span> <output id="zkTo">1.00</output></label>
+          <input type="range" id="zkT" min="-1.3" max="1.7" step="0.005" value="0">
+        </div>
+        <div class="ctl">
+          <label for="zE0"><span>Shift all energies by E<sub>0</sub> / ε</span> <output id="zE0o">0.0</output></label>
+          <input type="range" id="zE0" min="-3" max="3" step="0.1" value="0">
+        </div>
+        <div class="readout" id="zRead"></div>
+      </div>
+    </div>
+    <p class="caption" id="zCap">Bars: Boltzmann factor of each level, g·e<sup>−E/k<sub>B</sub>T</sup>; the curve is e<sup>−E/k<sub>B</sub>T</sup>. Move E<sub>0</sub>: the bars and Z rescale, the probabilities on the right do not.</p>
+  </div>
+  <div class="prose">
+    <p>For a degenerate level, the probability of the <em>level</em> is <span class="m">g(E)·e<sup>−E/k<sub>B</sub>T</sup>/Z = e<sup>−F/k<sub>B</sub>T</sup>/Z</span> with <span class="m">F = E − TS</span> and <span class="m">S = k<sub>B</sub> ln g</span> (Problem 6.2). Try the hydrogen-like preset at high temperature: the many excited states win on sheer numbers.</p>
+  </div>
+</section>
+
+<!-- ============ negative T ============ -->
+<section id="negative">
+  <h2><span class="num">6.11</span>Lithium nuclei and negative temperature</h2>
+  <div class="prose">
+    <p>A <sup>7</sup>Li nucleus has four spin states <span class="m">m = −3/2, −1/2, 1/2, 3/2</span> with <span class="m">E = −mμB</span>, <span class="m">μ = 1.03 × 10<sup>−7</sup> eV/T</span>. In the Purcell–Pound experiment, <span class="m">B = 0.63 T</span> and <span class="m">T = 300 K</span>, so <span class="m">μB/k<sub>B</sub>T ≈ 2.5 × 10<sup>−6</sup></span> and every probability is within a millionth of 1/4. If the field is reversed suddenly, the populations have no time to change, and they now match a Boltzmann distribution with <span class="m">T = −300 K</span>.</p>
+  </div>
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-title">Spin populations, shown as deviation from 1/4</span>
+      <div class="btns">
+        <button id="liRev">Reverse the field suddenly</button>
+        <button id="liEq">Let spins re-equilibrate</button>
+      </div>
+    </div>
+    <div class="cols">
+      <canvas id="liChart" style="height:270px" aria-label="Spin state populations"></canvas>
+      <div class="controls">
+        <div class="ctl">
+          <label for="liB"><span>Field magnitude |B|</span> <output id="liBo">0.63 T</output></label>
+          <input type="range" id="liB" min="0.05" max="2" step="0.01" value="0.63">
+        </div>
+        <div class="ctl">
+          <label for="liT"><span>Lattice temperature</span> <output id="liTo">300 K</output></label>
+          <input type="range" id="liT" min="-2" max="2.4771" step="0.001" value="2.4771">
+        </div>
+        <div class="readout" id="liRead"></div>
+      </div>
+    </div>
+    <p class="caption">Lower the temperature to make the deviations large enough to see by eye, then reverse the field: the highest-energy state becomes the most populated.</p>
+  </div>
+</section>
+
+<!-- ============ 6.2 ============ -->
+<section id="averages">
+  <h2><span class="num">6.2</span>Average values and fluctuations</h2>
+  <div class="prose">
+    <p>Often we only need the average of some property. Writing <span class="m">β ≡ 1/k<sub>B</sub>T</span>,</p>
+    <div class="fbox">X̄ = Σ<sub>s</sub> X(s) P(s) = <span class="frac"><span>1</span><span>Z</span></span> Σ<sub>s</sub> X(s) e<sup>−βE(s)</sup></div>
+    <p>Start with the five-atom toy model from the notes. Move atoms between levels.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head"><span class="lab-title">Five-atom toy model (Problem 6.17)</span></div>
+    <div class="cols even">
+      <canvas id="toyChart" style="height:230px" aria-label="Atoms in each level"></canvas>
+      <div class="controls">
+        <div id="toyCtl" class="controls" style="gap:8px"></div>
+        <div class="readout" id="toyRead"></div>
+      </div>
+    </div>
+    <p class="caption">σ<sub>E</sub><sup>2</sup> = mean of the squares − square of the mean, <span class="ink-blue">“제곱의 평균 − 평균의 제곱”</span>.</p>
+  </div>
+
+  <div class="prose">
+    <p>Now let the canonical ensemble do the averaging. The derivatives of <span class="m">Z</span> do the work (Problems 6.16 and 6.18):</p>
+    <div class="fbox">Ē = −<span class="frac"><span>∂ ln Z</span><span>∂β</span></span>, &nbsp; <span style="text-decoration:overline">E²</span> = <span class="frac"><span>1</span><span>Z</span></span><span class="frac"><span>∂²Z</span><span>∂β²</span></span>, &nbsp; σ<sub>E</sub> = k<sub>B</sub>T <span style="white-space:nowrap">√(C/k<sub>B</sub>)</span></div>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-title">Canonical ensemble: averages, fluctuations, heat capacity</span>
+      <select id="eSys" aria-label="System">
+        <option value="two">Two-state system (0, ε)</option>
+        <option value="toy" selected>Toy atom (0, 4ε, 7ε)</option>
+        <option value="osc">Harmonic oscillator (nε)</option>
+      </select>
+    </div>
+    <div class="cols">
+      <div>
+        <canvas id="eCurve" style="height:220px" aria-label="Average energy and fluctuation versus temperature"></canvas>
+        <div style="margin:4px 0 10px">
+          <span class="key"><span class="sw" style="background:var(--bar)"></span>Ē</span>
+          <span class="key"><span class="sw" style="background:var(--red)"></span>σ<sub>E</sub></span>
+          <span class="key"><span class="sw" style="background:var(--green)"></span>C / k<sub>B</sub></span>
+        </div>
+        <canvas id="eHist" style="height:180px" aria-label="Sampled ensemble members"></canvas>
+      </div>
+      <div class="controls">
+        <div class="ctl">
+          <label for="ekT"><span>k<sub>B</sub>T / ε</span> <output id="ekTo">2.00</output></label>
+          <input type="range" id="ekT" min="-1" max="1.3" step="0.005" value="0.301">
+        </div>
+        <div class="readout" id="eRead"></div>
+        <div class="btns">
+          <button id="eDraw">Draw 1,000 systems</button>
+          <button id="eDraw2">Draw 100,000</button>
+        </div>
+        <div class="readout" id="eSamp"></div>
+      </div>
+    </div>
+    <p class="caption">The two columns of numbers agree: summing over states, differentiating ln Z, and reading off the heat capacity are three routes to the same physics. Sampling shows the ensemble that these averages describe. For N independent copies, U = NĒ.</p>
+  </div>
+
+  <div class="prose">
+    <p class="margin-note">σ<sub>E</sub> = k<sub>B</sub>T√(C/k<sub>B</sub>) is a first taste of the fluctuation–dissipation theorem: internal fluctuations are tied to the response to an external change.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Lecture notes by Prof. Sang Hoon Lee, Department of Physics, Gyeongsang National University. Interactive demo created by Claude Opus 5.5 (Anthropic) from those notes.</p>
+  Built from the chapter 6 lecture notes (Schroeder, <em>An Introduction to Thermal Physics</em>, §6.1–6.2 and Problems 6.2, 6.11, 6.16–6.18). Energies are in units of ε unless labeled; k<sub>B</sub> = 8.617 × 10<sup>−5</sup> eV/K.
+</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const kB = 8.617333e-5;
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let C = {};
+function readColors(){ ['--ink','--ink2','--rule','--paper','--panel','--bar','--bar2','--red','--blue','--green','--purple','--hl-pink','--hl-green','--hl-cyan','--hl-peach'].forEach(k=>C[k.slice(2)]=css(k)); }
+readColors();
+
+function fit(cv){
+  const r = cv.getBoundingClientRect(), d = window.devicePixelRatio||1;
+  const w = Math.max(10,r.width), h = Math.max(10,r.height);
+  if (cv.width !== Math.round(w*d) || cv.height !== Math.round(h*d)){ cv.width = Math.round(w*d); cv.height = Math.round(h*d); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(d,0,0,d,0,0); ctx.clearRect(0,0,w,h);
+  ctx.font = '12.5px "IBM Plex Sans", Arial, sans-serif'; ctx.textBaseline='middle';
+  return {ctx,w,h};
+}
+const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+function sci(x,dig=2){
+  if (x===0) return '0';
+  if (!isFinite(x)) return '∞';
+  const e = Math.floor(Math.log10(Math.abs(x)));
+  if (e>=-3 && e<=4) return x.toPrecision(dig+1).replace(/\.?0+$/,'') ;
+  const m = x/Math.pow(10,e);
+  return m.toFixed(dig-1)+' × 10'+String(e).split('').map(c=>SUP[c]).join('');
+}
+function sciLog10(l){ // number given as log10
+  const e = Math.floor(l), m = Math.pow(10,l-e);
+  if (l<4) return Math.round(Math.pow(10,l)).toLocaleString();
+  return m.toFixed(2)+' × 10'+String(e).split('').map(c=>SUP[c]).join('');
+}
+function subText(ctx,str,x,y,align){
+  const base=ctx.font, small=base.replace(/([\d.]+)px/,(m,n)=>(n*0.72).toFixed(1)+'px');
+  const parts=str.split(/(_\{[^}]*\})/).filter(Boolean).map(t=>t.startsWith('_{')?[t.slice(2,-1),1]:[t,0]);
+  let W=0; parts.forEach(([t,sb])=>{ctx.font=sb?small:base; W+=ctx.measureText(t).width;});
+  let cx = align==='right'?x-W:(align==='center'?x-W/2:x); const a=ctx.textAlign; ctx.textAlign='left';
+  parts.forEach(([t,sb])=>{ctx.font=sb?small:base; ctx.fillText(t,cx,sb?y+4:y); cx+=ctx.measureText(t).width;});
+  ctx.font=base; ctx.textAlign=a;
+}
+function rows(el, list){ el.innerHTML = list.map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join(''); }
+
+// log-gamma (Lanczos)
+const LG = [676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+function lgamma(z){
+  if (z<0.5) return Math.log(Math.PI/Math.sin(Math.PI*z)) - lgamma(1-z);
+  z -= 1; let x = 0.99999999999980993;
+  for (let i=0;i<8;i++) x += LG[i]/(z+i+1);
+  const t = z+7.5;
+  return 0.5*Math.log(2*Math.PI)+(z+0.5)*Math.log(t)-t+Math.log(x);
+}
+const lnOmega = (N,q) => q<0 ? -Infinity : lgamma(q+N)-lgamma(q+1)-lgamma(N); // Einstein solid
+
+function axes(ctx,x0,y0,x1,y1){
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke();
+}
+
+/* ================= 6.0 live simulation ================= */
+const simSizes=[20,80,300,1000];
+const sim={N:80, rho:1, q:null, Q:0, iso:false, hist:[], count:0, running:!reduce, frozenN:0};
+function simInit(){
+  const N=sim.N, Q=Math.round(sim.rho*N);
+  sim.Q=Q; sim.q=new Int32Array(N+1);
+  for(let k=0;k<Q;k++) sim.q[1+(k%N)]++;
+  // burn in
+  for(let s=0;s<40*(N+1)*Math.max(1,sim.rho);s++) simStep();
+  simClear();
+}
+function simClear(){ sim.hist=new Float64Array(64); sim.count=0; }
+function simStep(){
+  const M=sim.N+1, i=(Math.random()*M)|0, j=(Math.random()*M)|0;
+  if (i===j) return;
+  if (sim.iso && (i===0||j===0)) return;
+  if (sim.q[i]>0){ sim.q[i]--; sim.q[j]++; }
+}
+function simExact(){
+  const N=sim.N, Q=sim.Q, out=[];
+  if (sim.iso){ for(let n=0;n<64;n++) out.push(n===sim.q[0]?1:0); return out; }
+  let mx=-Infinity; const l=[];
+  for(let n=0;n<64;n++){ const v=n<=Q?lnOmega(N,Q-n):-Infinity; l.push(v); if(v>mx)mx=v; }
+  let s=0; const p=l.map(v=>{const e=Math.exp(v-mx); s+=e; return e;});
+  return p.map(v=>v/s);
+}
+function drawSim(){
+  { const {ctx,w,h}=fit($('simStrip'));
+    const M=sim.N+1, cw=w/M, unit=Math.min(9,(h-26)/Math.max(6,sim.rho*5));
+    for(let i=0;i<M;i++){
+      const qi=sim.q[i], hh=Math.min(h-24,qi*unit);
+      ctx.fillStyle = i===0 ? C['hl-pink'] : C.bar;
+      ctx.globalAlpha = i===0?1:0.75;
+      ctx.fillRect(i*cw+(cw>3?0.6:0), h-6-hh, Math.max(0.8,cw-(cw>3?1.2:0)), hh);
+    }
+    ctx.globalAlpha=1;
+    ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,h-5.5); ctx.lineTo(w,h-5.5); ctx.stroke();
+    ctx.fillStyle=C.ink; ctx.textAlign='left';
+    ctx.font='italic 14px "Source Serif 4", Georgia, serif'; ctx.fillStyle=C.purple;
+    ctx.fillText(sim.iso?'atom (isolated): '+sim.q[0]+' quanta':'atom: '+sim.q[0]+' quanta', 4, 12);
+    ctx.textAlign='right'; ctx.fillStyle=C.ink2;
+    ctx.fillText('reservoir: '+sim.N+' oscillators, '+(sim.Q-(sim.iso?0:0))+' quanta in total', w-4, 12);
+  }
+  { const {ctx,w,h}=fit($('simHist'));
+    const ex=simExact(); let nmax=1;
+    for(let n=0;n<64;n++){ if(ex[n]>1e-3||sim.hist[n]>0) nmax=Math.max(nmax,n); }
+    nmax=Math.min(63,Math.max(nmax,6));
+    const x0=40,y0=h-26,x1=w-6,y1=10, bw=(x1-x0)/(nmax+1);
+    let pm=0; for(let n=0;n<=nmax;n++){ pm=Math.max(pm,ex[n], sim.count?sim.hist[n]/sim.count:0); }
+    pm = pm*1.12||1;
+    ctx.fillStyle=C.ink2; ctx.textAlign='right';
+    for(let k=0;k<=4;k++){ const v=pm*k/4, y=y0-(y0-y1)*k/4; ctx.fillText(v.toFixed(2),x0-5,y); ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); }
+    for(let n=0;n<=nmax;n++){
+      const ps=sim.count?sim.hist[n]/sim.count:0, x=x0+n*bw;
+      ctx.fillStyle=C['hl-pink']; ctx.fillRect(x+bw*.12,y0-(y0-y1)*ps/pm,bw*.76,(y0-y1)*ps/pm);
+      ctx.strokeStyle=C.ink; ctx.lineWidth=2; const ye=y0-(y0-y1)*ex[n]/pm;
+      ctx.beginPath(); ctx.moveTo(x+bw*.08,ye); ctx.lineTo(x+bw*.92,ye); ctx.stroke();
+      if (bw>13||n%5===0){ ctx.fillStyle=C.ink; ctx.textAlign='center'; ctx.fillText(n,x+bw/2,y0+12); }
+    }
+    axes(ctx,x0,y0,x1,y1);
+    ctx.textAlign='right'; ctx.fillStyle=C.ink2; ctx.fillText('atom energy n (units of ε)',x1,h-4);
+  }
+  const N=sim.N,Q=sim.Q, ratio = sim.iso?null:Math.exp(lnOmega(N,Q-1)-lnOmega(N,Q));
+  rows($('simRead'),[
+    ['samples', sim.count.toLocaleString()],
+    ['Ω<sub>R</sub> when atom has 0', sciLog10(lnOmega(N,Q)/Math.LN10)],
+    ['Ω<sub>R</sub> when atom has 1', sciLog10(lnOmega(N,Q-1)/Math.LN10)],
+    ['ratio P(1)/P(0)', sim.iso?'—':ratio.toFixed(3)],
+  ]);
+}
+function simFrame(){
+  if (sim.running){
+    const steps = 3000;
+    for(let s=0;s<steps;s++){ simStep(); const n=sim.q[0]; if(n<64){sim.hist[n]++;} sim.count++; }
+    drawSim();
+  }
+  requestAnimationFrame(simFrame);
+}
+$('simPlay').onclick=()=>{ sim.running=!sim.running; $('simPlay').textContent=sim.running?'Pause':'Run'; $('simPlay').setAttribute('aria-pressed',sim.running); drawSim(); };
+$('simIso').onclick=()=>{ sim.iso=!sim.iso; $('simIso').setAttribute('aria-pressed',sim.iso); $('simIso').textContent=sim.iso?'Reconnect to reservoir':'Isolate the atom'; simClear(); drawSim(); };
+$('simReset').onclick=()=>{ simClear(); drawSim(); };
+$('simN').oninput=e=>{ sim.N=simSizes[+e.target.value]; $('simNo').textContent=sim.N; simInit(); drawSim(); };
+$('simQ').oninput=e=>{ sim.rho=+e.target.value; $('simQo').textContent=sim.rho.toFixed(1); simInit(); drawSim(); };
+if(!sim.running){ $('simPlay').textContent='Run'; $('simPlay').setAttribute('aria-pressed','false'); }
+
+/* ================= 6.1 grow the reservoir ================= */
+function drawGrow(){
+  const N=Math.max(2,Math.round(Math.pow(10,+$('gN').value))), rho=+$('gQ').value, Q=Math.max(1,Math.round(rho*N));
+  $('gNo').textContent=N.toLocaleString(); $('gQo').textContent=rho.toFixed(2);
+  const nmax=12, l=[]; let mx=-Infinity;
+  for(let n=0;n<=nmax;n++){ const v=n<=Q?lnOmega(N,Q-n):-Infinity; l.push(v); mx=Math.max(mx,v); }
+  let s=0; const ex=l.map(v=>{const e=Math.exp(v-mx); s+=e; return e;}).map(v=>v/s);
+  const be=Math.log(1+N/Q), x=Math.exp(-be);
+  // normalize Boltzmann over same range 0..min(Q,nmax)
+  let zb=0; const bz=[]; for(let n=0;n<=nmax;n++){ const v=n<=Q?Math.pow(x,n):0; bz.push(v); zb+=v; }
+  const bp=bz.map(v=>v/zb);
+  let dev=0; for(let n=0;n<=nmax;n++) dev=Math.max(dev,Math.abs(ex[n]-bp[n]));
+  const {ctx,w,h}=fit($('growChart'));
+  const x0=40,y0=h-26,x1=w-6,y1=10,bw=(x1-x0)/(nmax+1);
+  const pm=Math.max(...ex,...bp)*1.1;
+  ctx.fillStyle=C.ink2; ctx.textAlign='right';
+  for(let k=0;k<=4;k++){ const y=y0-(y0-y1)*k/4; ctx.fillText((pm*k/4).toFixed(2),x0-5,y); ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); }
+  ctx.strokeStyle=C.red; ctx.lineWidth=1.4; ctx.beginPath();
+  for(let t=0;t<=nmax+0.001;t+=0.05){ const px=x0+(t+.5)*bw, py=y0-(y0-y1)*(Math.pow(x,t)/zb)/pm; t===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }
+  ctx.stroke();
+  for(let n=0;n<=nmax;n++){
+    const xx=x0+n*bw; ctx.fillStyle=C.bar; ctx.fillRect(xx+bw*.18,y0-(y0-y1)*ex[n]/pm,bw*.64,(y0-y1)*ex[n]/pm);
+    ctx.fillStyle=C.red; ctx.beginPath(); ctx.arc(xx+bw/2,y0-(y0-y1)*bp[n]/pm,3.6,0,7); ctx.fill();
+    ctx.fillStyle=C.ink; ctx.textAlign='center'; ctx.fillText(n,xx+bw/2,y0+12);
+  }
+  axes(ctx,x0,y0,x1,y1);
+  ctx.textAlign='right'; ctx.fillStyle=C.ink2; ctx.fillText('atom energy n (units of ε)',x1,h-4);
+  rows($('gRead'),[
+    ['total quanta q', Q.toLocaleString()],
+    ['k<sub>B</sub>T / ε = 1/ln(1 + N/q)', (1/be).toFixed(3)],
+    ['largest |P<sub>exact</sub> − P<sub>Boltzmann</sub>|', dev<1e-4?sci(dev):dev.toFixed(4)],
+  ]);
+  let html='<tr><th>atom in state n</th><th>Ω<sub>R</sub>(q − n)</th><th>P exact</th><th>(1/Z)e<sup>−nε/k<sub>B</sub>T</sup></th></tr>';
+  for(let n=0;n<=5;n++){
+    html+=`<tr><td>${n}</td><td>${n<=Q?sciLog10(l[n]/Math.LN10):'0'}</td><td>${ex[n].toFixed(4)}</td><td>${bp[n].toFixed(4)}</td></tr>`;
+  }
+  $('gTable').innerHTML=html;
+}
+['gN','gQ'].forEach(id=>$(id).oninput=drawGrow);
+
+/* ================= hydrogen ================= */
+function drawH(){
+  const T=Math.pow(10,+$('hT').value); $('hTo').textContent=Math.round(T).toLocaleString()+' K';
+  const kT=kB*T;
+  const lv=[{n:1,E:-13.6,g:1},{n:2,E:-3.4,g:4},{n:3,E:-1.51,g:9}];
+  const r1=Math.exp(-(lv[1].E-lv[0].E)/kT), r2=Math.exp(-(lv[2].E-lv[0].E)/kT);
+  const pops=[1,4*r1,9*r2];
+  const {ctx,w,h}=fit($('hChart'));
+  const yE=E=>14+(h-40)*((-1.0-E)/(13.6-1.0+0.4));
+  const lx0=58, lx1=Math.min(w*0.46,260), bx0=lx1+26, bx1=w-10;
+  ctx.fillStyle=C.ink2; ctx.textAlign='right';
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx0-8,h-10); ctx.lineTo(lx0-8,8); ctx.stroke();
+  // log bar axis
+  const dmin=-22; const bxv=v=>bx0+(bx1-bx0)*(Math.max(dmin,Math.log10(v))-dmin)/(-dmin);
+  ctx.strokeStyle=C.rule; ctx.lineWidth=.6;
+  for(let d=dmin;d<=0;d+=2){ const xx=bx0+(bx1-bx0)*(d-dmin)/(-dmin); ctx.beginPath(); ctx.moveTo(xx,8); ctx.lineTo(xx,h-22); ctx.stroke(); if(d%4===0||d===0){ctx.fillStyle=C.ink2; ctx.textAlign='center'; ctx.fillText(d===0?'1':'10'+String(d).split('').map(c=>SUP[c]).join(''),xx,h-10);} }
+  lv.forEach((L,i)=>{
+    const y=yE(L.E);
+    ctx.fillStyle=C.ink; ctx.textAlign='right'; ctx.fillText(L.E+' eV',lx0-12,y);
+    const seg=(lx1-lx0)/9;
+    ctx.strokeStyle=C.ink; ctx.lineWidth=2;
+    for(let k=0;k<L.g;k++){ ctx.beginPath(); ctx.moveTo(lx0+k*seg+2,y); ctx.lineTo(lx0+(k+1)*seg-2,y); ctx.stroke(); }
+    ctx.fillStyle = i===1?C['hl-pink']:(i===0?C['hl-green']:C['hl-cyan']);
+    const bwid=bxv(pops[i])-bx0; ctx.fillRect(bx0,y-9,Math.max(1,bwid),18);
+    ctx.fillStyle=C.ink; ctx.textAlign='left';
+    const lab='n='+L.n+', g='+L.g+':  '+sci(pops[i]);
+    ctx.fillText(lab, Math.min(bx0+bwid+6, bx1-ctx.measureText(lab).width), y-17<10?y+19:y-17);
+  });
+  ctx.font='italic 14px "Source Serif 4", Georgia, serif'; ctx.fillStyle=C.purple; ctx.textAlign='left';
+  ctx.fillText('population relative to ground state (log)',bx0,h-28>yE(-13.6)+24?h-30:12);
+  rows($('hRead'),[
+    ['k<sub>B</sub>T', kT.toFixed(3)+' eV'],
+    ['ΔE / k<sub>B</sub>T for 1 → 2', (10.2/kT).toFixed(2)],
+    ['P(s₂)/P(s₁), one state', sci(r1)],
+    ['whole n = 2 level (×4)', sci(4*r1)],
+    ['n = 2 atoms per 10⁹ ground-state', sci(4*r1*1e9)],
+    ['whole n = 3 level (×9)', sci(9*r2)],
+  ]);
+}
+$('hT').oninput=drawH;
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ $('hT').value=Math.log10(+b.dataset.t); drawH(); });
+
+/* ================= partition function ================= */
+function levels(sys){
+  if(sys==='two') return [{E:0,g:1},{E:1,g:1}];
+  if(sys==='toy') return [{E:0,g:1},{E:4,g:1},{E:7,g:1}];
+  if(sys==='osc') return Array.from({length:200},(_,n)=>({E:n,g:1}));
+  if(sys==='hyd') return Array.from({length:8},(_,i)=>{const n=i+1; return {E:(1-1/(n*n))*4/3,g:n*n,n};});
+}
+function Zof(L,b,E0=0){ let z=0; for(const l of L) z+=l.g*Math.exp(-b*(l.E+E0)); return z; }
+function drawZ(){
+  const sys=$('zSys').value, L=levels(sys), kT=Math.pow(10,+$('zkT').value), E0=+$('zE0').value, b=1/kT;
+  $('zkTo').textContent=kT<10?kT.toFixed(2):kT.toFixed(1); $('zE0o').textContent=E0.toFixed(1);
+  const Z=Zof(L,b,E0), Z0=Zof(L,b,0);
+  const show = sys==='osc' ? L.slice(0,16) : L;
+  const Emin=Math.min(0,E0+show[0].E)-0.3, Emax=Math.max(...show.map(l=>l.E))+Math.max(0,E0)+0.5;
+  const {ctx,w,h}=fit($('zChart'));
+  const x0=50,y0=h-26,x1=w-8,y1=12, X=E=>x0+(x1-x0)*(E-Emin)/(Emax-Emin);
+  const facs=show.map(l=>l.g*Math.exp(-b*(l.E+E0)));
+  const fm=Math.max(...facs, Math.exp(-b*Math.min(...show.map(l=>l.E+E0))))*1.1;
+  const Y=v=>y0-(y0-y1)*v/fm;
+  ctx.fillStyle=C.ink2; ctx.textAlign='right';
+  for(let k=0;k<=4;k++){ const v=fm*k/4; ctx.fillText(sci(v,2),x0-5,Y(v)); ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(x0,Y(v)); ctx.lineTo(x1,Y(v)); ctx.stroke(); }
+  // curve
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1.4; ctx.beginPath(); let first=true;
+  for(let E=Emin;E<=Emax;E+=(Emax-Emin)/300){ const v=Math.exp(-b*E); if(v>fm*1.05){continue;} first?ctx.moveTo(X(E),Y(v)):ctx.lineTo(X(E),Y(v)); first=false; }
+  ctx.stroke();
+  const bw=Math.max(4,Math.min(26,(x1-x0)/(show.length*2.2)));
+  show.forEach((l,i)=>{
+    const E=l.E+E0, xx=X(E);
+    ctx.fillStyle=C.bar; ctx.globalAlpha=.85; ctx.fillRect(xx-bw/2,Y(facs[i]),bw,y0-Y(facs[i])); ctx.globalAlpha=1;
+    if(l.g>1){ // tick marks for degenerate states
+      ctx.strokeStyle=C.panel; ctx.lineWidth=1;
+      for(let k=1;k<l.g;k++){ const yy=y0-(y0-Y(facs[i]))*k/l.g; ctx.beginPath(); ctx.moveTo(xx-bw/2,yy); ctx.lineTo(xx+bw/2,yy); ctx.stroke(); }
+    }
+  });
+  axes(ctx,x0,y0,x1,y1);
+  ctx.fillStyle=C.ink; ctx.textAlign='center';
+  const step = (Emax-Emin)>10?2:((Emax-Emin)>4?1:0.5);
+  for(let E=Math.ceil(Emin/step)*step;E<=Emax;E+=step){ ctx.fillText(+E.toFixed(2),X(E),y0+12); }
+  ctx.strokeStyle=C.red; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(X(0),y0); ctx.lineTo(X(0),y1); ctx.stroke(); ctx.setLineDash([]);
+  ctx.textAlign='right'; ctx.fillStyle=C.ink2; ctx.fillText('E(s) / ε',x1,h-4);
+  // Z vs T
+  { const g=fit($('zT')), c=g.ctx; const xa=50,ya=g.h-22,xb=g.w-8,yb=10;
+    const total=L.reduce((a,l)=>a+l.g,0);
+    const zs=[]; for(let i=0;i<=200;i++){ const lk=-1.3+3*i/200; zs.push([lk,Zof(L,1/Math.pow(10,lk),0)]); }
+    const zmax=Math.max(...zs.map(p=>p[1]))*1.08;
+    const XT=lk=>xa+(xb-xa)*(lk+1.3)/3, YT=z=>ya-(ya-yb)*z/zmax;
+    c.fillStyle=C.ink2; c.textAlign='right'; c.fillText('1',xa-5,YT(1)); c.fillText(zmax<20?zmax.toFixed(1):Math.round(zmax),xa-5,yb+4);
+    if(total<=zmax){ c.strokeStyle=C.green; c.setLineDash([3,4]); c.beginPath(); c.moveTo(xa,YT(total)); c.lineTo(xb,YT(total)); c.stroke(); c.setLineDash([]); c.fillStyle=C.green; c.textAlign='left'; c.fillText('all '+total+' states',xa+6,YT(total)-9); }
+    c.strokeStyle=C.rule; c.beginPath(); c.moveTo(xa,YT(1)); c.lineTo(xb,YT(1)); c.stroke();
+    c.strokeStyle=C.bar; c.lineWidth=2; c.beginPath(); zs.forEach((p,i)=>i?c.lineTo(XT(p[0]),YT(p[1])):c.moveTo(XT(p[0]),YT(p[1]))); c.stroke();
+    const lk=+$('zkT').value; c.fillStyle=C.red; c.beginPath(); c.arc(XT(lk),YT(Z0),4.5,0,7); c.fill();
+    axes(c,xa,ya,xb,yb);
+    c.fillStyle=C.ink; c.textAlign='center'; [0.1,1,10].forEach(v=>c.fillText(v,XT(Math.log10(v)),ya+11));
+    c.textAlign='right'; c.fillStyle=C.ink2; subText(c,'Z (E₀ = 0) vs. k_{B}T / ε, log scale',xb,yb+2,'right');
+  }
+  const P=L.map(l=>l.g*Math.exp(-b*(l.E+E0))/Z);
+  const r=[['Z', sci(Z,4)],['Z with E₀ = 0', sci(Z0,4)],['ratio = e<sup>−E₀/k<sub>B</sub>T</sup>', sci(Z/Z0,4)]];
+  const lim = sys==='osc'?5:L.length;
+  for(let i=0;i<lim;i++){
+    const l=L[i]; const lab = sys==='hyd' ? `P(level n=${l.n}, g=${l.g})` : `P(E = ${l.E}ε)`;
+    r.push([lab, P[i]<1e-4?sci(P[i]):P[i].toFixed(4)]);
+  }
+  rows($('zRead'),r);
+}
+['zSys','zkT','zE0'].forEach(id=>$(id).oninput=drawZ);
+
+/* ================= lithium ================= */
+const mu=1.03e-7, ms=[-1.5,-0.5,0.5,1.5];
+const li={sign:1, frozen:null};
+function liEnergies(){ const B=+$('liB').value*li.sign; return ms.map(m=>-m*mu*B); }
+function liEq(T){ const E=liEnergies(), w=E.map(e=>Math.exp(-e/(kB*T))), z=w.reduce((a,b)=>a+b,0); return w.map(v=>v/z); }
+function drawLi(){
+  const T=Math.pow(10,+$('liT').value), B=+$('liB').value;
+  $('liTo').textContent=(T<1?T.toPrecision(2):T.toFixed(T<10?2:0))+' K'; $('liBo').textContent=(li.sign*B).toFixed(2)+' T';
+  const E=liEnergies(), P=li.frozen||liEq(T);
+  // effective temperature from extreme states
+  const Teff = -(E[3]-E[0])/(kB*Math.log(P[3]/P[0]));
+  const {ctx,w,h}=fit($('liChart'));
+  const x0=70,x1=w-10,y1=14,y0=h-40,ymid=(y0+y1)/2;
+  const dev=P.map(p=>(p-0.25)*1e6); const dm=Math.max(1e-9,...dev.map(Math.abs))*1.15;
+  const Y=v=>ymid-(ymid-y1)*v/dm;
+  ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.fillStyle=C.ink2; ctx.textAlign='right';
+  [-1,-.5,0,.5,1].forEach(f=>{ const v=f*dm; ctx.beginPath(); ctx.moveTo(x0,Y(v)); ctx.lineTo(x1,Y(v)); ctx.stroke(); ctx.fillText((v>=0?'+':'')+sci(v,2),x0-6,Y(v)); });
+  ctx.save(); ctx.translate(14,ymid); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('P − ¼  (ppm)',0,0); ctx.restore();
+  const bw=(x1-x0)/4;
+  ms.forEach((m,i)=>{
+    const xx=x0+i*bw;
+    ctx.fillStyle= dev[i]>=0?C.bar:C.red; ctx.globalAlpha=.85;
+    ctx.fillRect(xx+bw*.22,Math.min(Y(0),Y(dev[i])),bw*.56,Math.abs(Y(dev[i])-Y(0))); ctx.globalAlpha=1;
+    ctx.fillStyle=C.ink; ctx.textAlign='center';
+    ctx.fillText('m = '+(m>0?'+':'')+(m*2)+'/2',xx+bw/2,y0+14);
+    ctx.fillStyle=C.ink2; ctx.fillText('E = '+(E[i]>=0?'+':'')+sci(E[i],2)+' eV',xx+bw/2,y0+30);
+  });
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x0,Y(0)); ctx.lineTo(x1,Y(0)); ctx.stroke();
+  rows($('liRead'),[
+    ['state', li.frozen?'just reversed, not in equilibrium with lattice':'in equilibrium with lattice'],
+    ['μB / k<sub>B</sub>T (lattice)', sci(mu*B/(kB*T),3)],
+    ...ms.map((m,i)=>['P(m = '+(m>0?'+':'')+(m*2)+'/2)', P[i].toFixed(8)]),
+    ['T that fits these populations', (Teff>0?'':'−')+sci(Math.abs(Teff),3)+' K'],
+  ]);
+}
+$('liRev').onclick=()=>{ const T=Math.pow(10,+$('liT').value); if(!li.frozen) li.frozen=liEq(T); li.sign*=-1; drawLi(); };
+$('liEq').onclick=()=>{ li.frozen=null; drawLi(); };
+['liB','liT'].forEach(id=>$(id).oninput=drawLi);
+
+/* ================= five-atom toy ================= */
+const toy={E:[0,4,7], n:[2,2,1]};
+function buildToy(){
+  $('toyCtl').innerHTML = toy.E.map((E,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>${E} eV level</span><span class="btns"><button data-ti="${i}" data-d="-1" aria-label="Remove an atom from ${E} eV">−</button><b style="min-width:1.5em;text-align:center;display:inline-block" id="toyN${i}">${toy.n[i]}</b><button data-ti="${i}" data-d="1" aria-label="Add an atom to ${E} eV">+</button></span></div>`).join('');
+  $('toyCtl').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const i=+b.dataset.ti; toy.n[i]=Math.max(0,Math.min(8,toy.n[i]+(+b.dataset.d))); if(toy.n.reduce((a,c)=>a+c,0)===0) toy.n[i]=1; drawToy(); });
+}
+function drawToy(){
+  toy.n.forEach((v,i)=>$('toyN'+i).textContent=v);
+  const N=toy.n.reduce((a,b)=>a+b,0), list=[]; toy.E.forEach((E,i)=>{for(let k=0;k<toy.n[i];k++) list.push(E);});
+  const Eb=list.reduce((a,b)=>a+b,0)/N, E2=list.reduce((a,b)=>a+b*b,0)/N;
+  const dev=list.map(e=>e-Eb), var1=dev.reduce((a,d)=>a+d*d,0)/N, sig=Math.sqrt(var1);
+  const {ctx,w,h}=fit($('toyChart'));
+  const x0=60,x1=w-10,Y=E=>h-24-(h-44)*E/8;
+  ctx.fillStyle=C.ink2; ctx.textAlign='right';
+  toy.E.forEach((E,i)=>{
+    const y=Y(E); ctx.fillStyle=C.ink; ctx.fillText(E+' eV',x0-10,y);
+    ctx.strokeStyle=C.ink; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0+150,y); ctx.stroke();
+    for(let k=0;k<toy.n[i];k++){ ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(x0+16+k*17,y-8,6.5,0,7); ctx.fill(); }
+  });
+  ctx.strokeStyle=C.blue; ctx.setLineDash([5,4]); ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(x0,Y(Eb)); ctx.lineTo(x1,Y(Eb)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=C['hl-cyan']; ctx.globalAlpha=.45; ctx.fillRect(x0+165,Y(Eb+sig),Math.max(20,x1-x0-175),Y(Eb-sig)-Y(Eb+sig)); ctx.globalAlpha=1;
+  ctx.font='italic 14px "Source Serif 4", Georgia, serif'; ctx.fillStyle=C.blue; ctx.textAlign='left';
+  ctx.fillText('Ē = '+Eb.toFixed(2)+' eV',x0+172,Y(Eb)-12);
+  ctx.fillStyle=C.purple; ctx.fillText('Ē ± σ',x0+172,Math.max(14,Y(Eb+sig)+12));
+  rows($('toyRead'),[
+    ['N', N],
+    ['Ē = Σ E(s)·N(s)/N', Eb.toFixed(3)+' eV'],
+    ['deviations ΔE<sub>i</sub>', dev.map(d=>(d>=0?'+':'')+(+d.toFixed(2))).join(', ')],
+    ['mean of (ΔE<sub>i</sub>)²', var1.toFixed(3)+' eV²'],
+    ['mean of E² − Ē²', (E2-Eb*Eb).toFixed(3)+' eV²'],
+    ['σ<sub>E</sub>', sig.toFixed(3)+' eV'],
+  ]);
+}
+buildToy();
+
+/* ================= canonical ensemble ================= */
+let samp=null;
+function eStats(L,kT){
+  const b=1/kT; let z=0,e1=0,e2=0;
+  for(const l of L){ const w=l.g*Math.exp(-b*l.E); z+=w; e1+=l.E*w; e2+=l.E*l.E*w; }
+  return {Z:z,E:e1/z,E2:e2/z,sig:Math.sqrt(Math.max(0,e2/z-(e1/z)**2))};
+}
+function drawE(){
+  const sys=$('eSys').value, L=levels(sys), kT=Math.pow(10,+$('ekT').value), b=1/kT;
+  $('ekTo').textContent=kT.toFixed(2);
+  const S=eStats(L,kT);
+  const h=1e-4*b, lnZ=bb=>Math.log(Zof(L,bb));
+  const Efd=-(lnZ(b+h)-lnZ(b-h))/(2*h);
+  const hz=2e-3*b, Zc=Zof(L,b), E2fd=(Zof(L,b+hz)-2*Zc+Zof(L,b-hz))/(hz*hz)/Zc;
+  const dT=1e-4*kT, Cn=(eStats(L,kT+dT).E-eStats(L,kT-dT).E)/(2*dT);
+  rows($('eRead'),[
+    ['Z', sci(S.Z,4)],
+    ['Ē = Σ E P(s)', S.E.toFixed(4)],
+    ['Ē = −∂ ln Z/∂β', Efd.toFixed(4)],
+    ['mean E² = Σ E² P(s)', S.E2.toFixed(4)],
+    ['mean E² = (1/Z) ∂²Z/∂β²', E2fd.toFixed(4)],
+    ['σ<sub>E</sub> = √(mean E² − Ē²)', S.sig.toFixed(4)],
+    ['C / k<sub>B</sub> = ∂Ē/∂(k<sub>B</sub>T)', Cn.toFixed(4)],
+    ['k<sub>B</sub>T √(C/k<sub>B</sub>)', (kT*Math.sqrt(Math.max(0,Cn))).toFixed(4)],
+  ]);
+  // curves
+  { const {ctx,w,h:H}=fit($('eCurve')); const x0=44,y0=H-22,x1=w-8,y1=10;
+    const pts=[]; for(let i=0;i<=240;i++){ const lk=-1+2.3*i/240, t=Math.pow(10,lk), s=eStats(L,t), dt=1e-4*t; const c=(eStats(L,t+dt).E-eStats(L,t-dt).E)/(2*dt); pts.push([lk,s.E,s.sig,c]); }
+    const ym=Math.max(...pts.map(p=>Math.max(p[1],p[2],p[3])))*1.08;
+    const X=lk=>x0+(x1-x0)*(lk+1)/2.3, Y=v=>y0-(y0-y1)*v/ym;
+    ctx.fillStyle=C.ink2; ctx.textAlign='right';
+    for(let k=0;k<=4;k++){ const v=ym*k/4; ctx.fillText(v.toFixed(1),x0-5,Y(v)); ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(x0,Y(v)); ctx.lineTo(x1,Y(v)); ctx.stroke(); }
+    [[1,C.bar],[2,C.red],[3,C.green]].forEach(([k,col])=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[k])):ctx.moveTo(X(p[0]),Y(p[k]))); ctx.stroke(); });
+    const lk=+$('ekT').value; ctx.strokeStyle=C.ink; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(X(lk),y0); ctx.lineTo(X(lk),y1); ctx.stroke(); ctx.setLineDash([]);
+    axes(ctx,x0,y0,x1,y1);
+    ctx.fillStyle=C.ink; ctx.textAlign='center'; [0.1,1,10].forEach(v=>ctx.fillText(v,X(Math.log10(v)),y0+11));
+    ctx.textAlign='right'; ctx.fillStyle=C.ink2; subText(ctx,'k_{B}T / ε (log scale)',x1,y1+2,'right');
+  }
+  // histogram
+  { const {ctx,w,h:H}=fit($('eHist')); const x0=44,y0=H-22,x1=w-8,y1=12;
+    const P=L.map(l=>l.g*Math.exp(-b*l.E)/S.Z);
+    let ns=L.length; if(sys==='osc'){ let c=0; for(let i=0;i<L.length;i++){c+=P[i]; if(c>0.995){ns=Math.max(6,i+1);break;}} ns=Math.min(ns,40); }
+    const bw=(x1-x0)/ns;
+    let pm=Math.max(...P.slice(0,ns));
+    const sp = samp && samp.sys===sys && samp.kT===kT ? samp : null;
+    if(sp) pm=Math.max(pm,...sp.counts.slice(0,ns).map(c=>c/sp.n));
+    pm*=1.12;
+    const Y=v=>y0-(y0-y1)*v/pm;
+    ctx.fillStyle=C.ink2; ctx.textAlign='right'; ctx.fillText(pm.toFixed(2),x0-5,y1); ctx.fillText('0',x0-5,y0);
+    for(let i=0;i<ns;i++){
+      const xx=x0+i*bw;
+      if(sp){ const f=sp.counts[i]/sp.n; ctx.fillStyle=C['hl-pink']; ctx.fillRect(xx+bw*.14,Y(f),bw*.72,y0-Y(f)); }
+      ctx.strokeStyle=C.ink; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(xx+bw*.08,Y(P[i])); ctx.lineTo(xx+bw*.92,Y(P[i])); ctx.stroke();
+      if(bw>14||i%5===0){ ctx.fillStyle=C.ink; ctx.textAlign='center'; ctx.fillText(L[i].E,xx+bw/2,y0+11); }
+    }
+    axes(ctx,x0,y0,x1,y1);
+    ctx.textAlign='right'; ctx.fillStyle=C.ink2; ctx.fillText(sp?'pink: sampled systems; lines: P(s)':'lines: P(s); draw systems to compare',x1,y1-2);
+    if(sp){
+      rows($('eSamp'),[['systems drawn',sp.n.toLocaleString()],['sample mean of E',sp.mean.toFixed(4)],['sample σ<sub>E</sub>',sp.sd.toFixed(4)],['U = N·Ē (exact)',(sp.n*S.E).toFixed(1)],['sum of drawn energies',sp.sum.toFixed(1)]]);
+    } else $('eSamp').innerHTML='';
+  }
+}
+function drawSamples(n){
+  const sys=$('eSys').value, L=levels(sys), kT=Math.pow(10,+$('ekT').value), b=1/kT;
+  const S=eStats(L,kT), P=L.map(l=>l.g*Math.exp(-b*l.E)/S.Z), cdf=[]; let c=0; P.forEach(p=>{c+=p; cdf.push(c);});
+  const counts=new Float64Array(L.length); let s1=0,s2=0;
+  for(let k=0;k<n;k++){ const u=Math.random()*c; let lo=0,hi=cdf.length-1; while(lo<hi){const m=(lo+hi)>>1; if(cdf[m]<u) lo=m+1; else hi=m;} counts[lo]++; const E=L[lo].E; s1+=E; s2+=E*E; }
+  const mean=s1/n; samp={sys,kT,n,counts,mean,sd:Math.sqrt(Math.max(0,s2/n-mean*mean)),sum:s1};
+  drawE();
+}
+$('eDraw').onclick=()=>drawSamples(1000);
+$('eDraw2').onclick=()=>drawSamples(100000);
+['eSys','ekT'].forEach(id=>$(id).oninput=()=>{ samp=null; drawE(); });
+
+/* ================= boot ================= */
+function drawAll(){ drawSim(); drawGrow(); drawH(); drawZ(); drawLi(); drawToy(); drawE(); }
+simInit();
+drawAll();
+requestAnimationFrame(simFrame);
+let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(drawAll,80); });
+if(window.matchMedia){ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ readColors(); drawAll(); }); }
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(drawAll);
+new MutationObserver(()=>{ readColors(); drawAll(); }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+</body>
+</html>
