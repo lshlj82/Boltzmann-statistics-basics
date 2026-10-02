@@ -1,6 +1,6 @@
 # Boltzmann Statistics: An Interactive Companion
 
-An interactive web demo of the basic ideas and formalism of Boltzmann statistics, written for undergraduate statistical physics (Statistical Physics II, Chapter 6). It follows Prof. Sang Hoon Lee's lecture notes (Gyeongsang National University), which are based on Schroeder, *An Introduction to Thermal Physics*, §6.1–6.2.
+An interactive web demo of the basic ideas and formalism of Boltzmann statistics, written for undergraduate statistical physics (Statistical Physics II, Chapter 6). It follows Prof. Sang Hoon Lee's lecture notes (Gyeongsang National University), which are based on Schroeder, *An Introduction to Thermal Physics*, §6.1–6.3.
 
 The demo is one self-contained `index.html` file. It needs no build step and no dependencies.
 
@@ -17,6 +17,7 @@ The demo is one self-contained `index.html` file. It needs no build step and no 
 | **Partition function** | Z for a two-state system, a toy 0/4ε/7ε atom, a harmonic oscillator, and hydrogen-like degenerate levels. Shows the limits Z → 1 as T → 0 and Z → number of states at high T. A slider shifts all energies by E<sub>0</sub> to show that probabilities don't change (also Problem 6.2). |
 | **Problem 6.11** | ⁷Li nuclear spin populations in the Purcell–Pound experiment. Reversing the field suddenly produces T = −300 K. |
 | **6.2 Averages and fluctuations** | The five-atom toy model from Problem 6.17, where you can move atoms between levels. A canonical-ensemble panel checks Ē = −∂ ln Z/∂β, the mean of E² from (1/Z) ∂²Z/∂β², and σ<sub>E</sub> = k<sub>B</sub>T √(C/k<sub>B</sub>) (Problems 6.16–6.18). You can also draw ensemble samples. |
+| **Problem 6.32: thermal expansion** | A classical argon atom in a Lennard-Jones well. Shows the Boltzmann-weighted position distribution, the quadratic and cubic Taylor approximations, and x̄ from the exact integral compared with x̄ = x<sub>0</sub> − (b/2a²) k<sub>B</sub>T. The predicted expansion coefficient, 1.26 × 10⁻³ K⁻¹, is compared with the measured 7 × 10⁻⁴ K⁻¹. |
 
 ## Running locally
 

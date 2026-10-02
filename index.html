@@ -217,8 +217,8 @@ footer{margin-top:90px; color:var(--ink2); font-size:.92rem; max-width:690px}
         </div>
         <div class="readout" id="simRead"></div>
         <div>
-          <span class="key"><span class="sw" style="background:var(--hl-pink)"></span>simulated</span>
-          <span class="key"><span class="sw" style="background:var(--ink)"></span>exact count Ω<sub>R</sub>(q−n)</span>
+          <span class="key"><span class="sw" style="background:var(--hl-pink)"></span><span>simulated</span></span>
+          <span class="key"><span class="sw" style="background:var(--ink)"></span><span>exact count Ω<sub>R</sub>(q−n)</span></span>
         </div>
       </div>
     </div>
@@ -246,8 +246,8 @@ footer{margin-top:90px; color:var(--ink2); font-size:.92rem; max-width:690px}
       <div>
         <canvas id="growChart" style="height:250px" aria-label="Exact probabilities and Boltzmann prediction"></canvas>
         <div style="margin-top:6px">
-          <span class="key"><span class="sw" style="background:var(--bar)"></span>exact, ∝ Ω<sub>R</sub>(q−n)</span>
-          <span class="key"><span class="sw" style="background:var(--red);border-radius:50%;width:10px"></span>(1/Z) e<sup>−nε/k<sub>B</sub>T</sup></span>
+          <span class="key"><span class="sw" style="background:var(--bar)"></span><span>exact, ∝ Ω<sub>R</sub>(q−n)</span></span>
+          <span class="key"><span class="sw" style="background:var(--red);border-radius:50%;width:10px"></span><span>(1/Z) e<sup>−nε/k<sub>B</sub>T</sup></span></span>
         </div>
       </div>
       <div class="controls">
@@ -411,9 +411,9 @@ footer{margin-top:90px; color:var(--ink2); font-size:.92rem; max-width:690px}
       <div>
         <canvas id="eCurve" style="height:220px" aria-label="Average energy and fluctuation versus temperature"></canvas>
         <div style="margin:4px 0 10px">
-          <span class="key"><span class="sw" style="background:var(--bar)"></span>Ē</span>
-          <span class="key"><span class="sw" style="background:var(--red)"></span>σ<sub>E</sub></span>
-          <span class="key"><span class="sw" style="background:var(--green)"></span>C / k<sub>B</sub></span>
+          <span class="key"><span class="sw" style="background:var(--bar)"></span><span>Ē</span></span>
+          <span class="key"><span class="sw" style="background:var(--red)"></span><span>σ<sub>E</sub></span></span>
+          <span class="key"><span class="sw" style="background:var(--green)"></span><span>C / k<sub>B</sub></span></span>
         </div>
         <canvas id="eHist" style="height:180px" aria-label="Sampled ensemble members"></canvas>
       </div>
@@ -438,9 +438,62 @@ footer{margin-top:90px; color:var(--ink2); font-size:.92rem; max-width:690px}
   </div>
 </section>
 
+<!-- ============ Problem 6.32 ============ -->
+<section id="expansion">
+  <h2><span class="num">6.32</span>Example: thermal expansion of a noble-gas crystal</h2>
+  <div class="prose">
+    <p>A classical particle moves in a one-dimensional potential well <span class="m">u(x)</span> with its minimum at <span class="m">x<sub>0</sub></span>, in thermal equilibrium with a reservoir at temperature <span class="m">T</span>. The states are now labeled by a continuous position, so the sum over states becomes an integral.</p>
+    <p><strong>(a)</strong> By definition of the average,</p>
+    <div class="fbox green">x̄ = <span class="frac"><span>∫ x e<sup>−βu(x)</sup> dx</span><span>∫ e<sup>−βu(x)</sup> dx</span></span></div>
+    <p>where the denominator plays the role of <span class="m">Z</span>.</p>
+    <p><strong>(b)</strong> At the equilibrium point, <span class="m">du/dx|<sub>x<sub>0</sub></sub> = 0</span>, so the linear term of the Taylor series vanishes. Keeping terms up to quadratic order, <span class="m">u(x) ≈ u<sub>0</sub> + ½a(x − x<sub>0</sub>)<sup>2</sup></span> with <span class="m">a = u″(x<sub>0</sub>)</span>. The constant factor <span class="m">e<sup>−βu<sub>0</sub></sup></span> cancels. With <span class="m">y ≡ x − x<sub>0</sub></span>, the integral of <span class="m">y e<sup>−βay²/2</sup></span> is zero because the integrand is odd, so <span class="m">x̄ = x<sub>0</sub></span>. A symmetric well cannot expand.</p>
+    <p><strong>(c)</strong> Keep the cubic term, <span class="m">u ≈ u<sub>0</sub> + ½ay<sup>2</sup> + ⅙by<sup>3</sup></span> with <span class="m">b = u‴(x<sub>0</sub>)</span>, and treat it as small: <span class="m">e<sup>−βu</sup> ≈ e<sup>−βu<sub>0</sub> − βay²/2</sup>(1 − ⅙βby<sup>3</sup>)</span>. The odd terms in the integrand vanish again. The surviving <span class="m">y<sup>4</sup></span> Gaussian integral is proportional to <span class="m">β<sup>−5/2</sup></span>, while the normalization is proportional to <span class="m">β<sup>−1/2</sup></span>, so the shift scales as <span class="m">β · β<sup>−5/2</sup>/β<sup>−1/2</sup> = β<sup>−1</sup> = k<sub>B</sub>T</span>:</p>
+    <div class="fbox">x̄ = x<sub>0</sub> − <span class="frac"><span>b</span><span>2a<sup>2</sup></span></span> k<sub>B</sub>T</div>
+    <p><strong>(d)</strong> For the Lennard-Jones potential <span class="m">u(x) = u<sub>0</sub>[(x<sub>0</sub>/x)<sup>12</sup> − 2(x<sub>0</sub>/x)<sup>6</sup>]</span>, the minimum is at <span class="m">x<sub>0</sub></span> with depth <span class="m">u<sub>0</sub></span>, and differentiating gives <span class="m">a = 72u<sub>0</sub>/x<sub>0</sub><sup>2</sup></span> and <span class="m">b = −1512u<sub>0</sub>/x<sub>0</sub><sup>3</sup></span>. Since <span class="m">b &lt; 0</span>, the wall is softer on the far side and the atom drifts outward as it warms:</p>
+    <div class="fbox green">α = <span class="frac"><span>Δx/x<sub>0</sub></span><span>ΔT</span></span> = <span class="frac"><span>1512</span><span>2 · 72<sup>2</sup></span></span> <span class="frac"><span>k<sub>B</sub></span><span>u<sub>0</sub></span></span> ≈ 1.26 × 10<sup>−3</sup> K<sup>−1</sup></div>
+    <p>for argon (<span class="m">x<sub>0</sub> = 3.9 Å</span>, <span class="m">u<sub>0</sub> = 0.010 eV</span>). The measured value is <span class="m">α = 7 × 10<sup>−4</sup> K<sup>−1</sup></span> at 80 K, the same order of magnitude.</p>
+  </div>
+
+  <div class="lab">
+    <div class="lab-head">
+      <span class="lab-title">An argon atom in a Lennard-Jones well</span>
+      <div class="btns">
+        <button id="ljShowApprox" aria-pressed="true">Show Taylor approximations</button>
+        <button data-ljt="80">80 K (measured α)</button>
+      </div>
+    </div>
+    <div class="cols">
+      <div>
+        <canvas id="ljChart" style="height:290px" aria-label="Lennard-Jones potential with the Boltzmann-weighted position distribution"></canvas>
+        <div style="margin:4px 0 10px">
+          <span class="key"><span class="sw" style="background:var(--ink)"></span><span>u(x) / u<sub>0</sub></span></span>
+          <span class="key"><span class="sw" style="background:var(--green)"></span><span>quadratic</span></span>
+          <span class="key"><span class="sw" style="background:var(--purple)"></span><span>+ cubic</span></span>
+          <span class="key"><span class="sw" style="background:var(--hl-pink)"></span><span>e<sup>−βu(x)</sup>, normalized</span></span>
+          <span class="key"><span class="sw" style="background:var(--blue)"></span><span>x̄ (exact integral)</span></span>
+          <span class="key"><span class="sw" style="background:var(--red)"></span><span>x̄ from (c)</span></span>
+        </div>
+        <canvas id="ljT" style="height:180px" aria-label="Average position versus temperature"></canvas>
+      </div>
+      <div class="controls">
+        <div class="ctl">
+          <label for="ljTemp"><span>Temperature</span> <output id="ljTo">5 K</output></label>
+          <input type="range" id="ljTemp" min="1" max="100" step="1" value="5">
+        </div>
+        <div class="ctl">
+          <label for="ljCut"><span>Outer cutoff x<sub>max</sub> / x<sub>0</sub></span> <output id="ljCo">1.50</output></label>
+          <input type="range" id="ljCut" min="1.25" max="2.5" step="0.01" value="1.5">
+        </div>
+        <div class="readout" id="ljRead"></div>
+      </div>
+    </div>
+    <p class="caption">The Lennard-Jones well has a finite depth, so at high temperature an unconfined atom could escape and the integral over all x would diverge. In a crystal the neighbors keep it in place, so the exact integral here runs from 0.8 x<sub>0</sub> to an adjustable outer cutoff. At a few kelvin, x̄ follows the straight line from part (c). By tens of kelvin, k<sub>B</sub>T is no longer small compared with u<sub>0</sub>: higher-order terms of the potential and the cutoff start to matter, and this one-dimensional model overshoots the measured expansion.</p>
+  </div>
+</section>
+
 <footer>
   <p>Lecture notes by Prof. Sang Hoon Lee, Department of Physics, Gyeongsang National University. Interactive demo created by Claude Opus 5.5 (Anthropic) from those notes.</p>
-  Built from the chapter 6 lecture notes (Schroeder, <em>An Introduction to Thermal Physics</em>, §6.1–6.2 and Problems 6.2, 6.11, 6.16–6.18). Energies are in units of ε unless labeled; k<sub>B</sub> = 8.617 × 10<sup>−5</sup> eV/K.
+  Built from the chapter 6 lecture notes (Schroeder, <em>An Introduction to Thermal Physics</em>, §6.1–6.3 and Problems 6.2, 6.11, 6.16–6.18, 6.32). Energies are in units of ε unless labeled; k<sub>B</sub> = 8.617 × 10<sup>−5</sup> eV/K.
 </footer>
 </main>
 
@@ -888,8 +941,83 @@ $('eDraw').onclick=()=>drawSamples(1000);
 $('eDraw2').onclick=()=>drawSamples(100000);
 ['eSys','ekT'].forEach(id=>$(id).oninput=()=>{ samp=null; drawE(); });
 
+
+/* ================= Problem 6.32: Lennard-Jones thermal expansion ================= */
+const LJ={u0:0.010, x0:3.9, approx:true, xlo:0.8};
+const ljU=r=>Math.pow(r,-12)-2*Math.pow(r,-6);           // u/u0, r = x/x0
+const ljCoef=1512/(2*72*72);                              // Δx/x0 per (k_BT/u0)
+function ljMean(t,cut){ // t = k_BT/u0; Simpson over [xlo, cut]
+  const n=3000, h=(cut-LJ.xlo)/n; let s0=0,s1=0;
+  for(let i=0;i<=n;i++){ const r=LJ.xlo+i*h, wgt=(i===0||i===n)?1:(i%2?4:2), f=Math.exp(-(ljU(r)+1)/t); s0+=wgt*f; s1+=wgt*f*r; }
+  return s1/s0;
+}
+function drawLJ(){
+  const T=+$('ljTemp').value, cut=+$('ljCut').value, t=kB*T/LJ.u0;
+  $('ljTo').textContent=T+' K'; $('ljCo').textContent=cut.toFixed(2);
+  const xm=ljMean(t,cut), xc=1+ljCoef*t;
+  // potential + distribution
+  { const {ctx,w,h}=fit($('ljChart')); const x0=44,y0=h-24,x1=w-8,y1=10;
+    const rmin=0.85, rmax=Math.max(2.0,cut+0.15), umin=-1.15, umax=1.0;
+    const X=r=>x0+(x1-x0)*(r-rmin)/(rmax-rmin), Y=u=>y0-(y0-y1)*(u-umin)/(umax-umin);
+    // excluded region beyond cutoff
+    ctx.fillStyle=C.rule; ctx.globalAlpha=.35; ctx.fillRect(X(cut),y1,x1-X(cut),y0-y1); ctx.globalAlpha=1;
+    ctx.fillStyle=C.ink2; ctx.textAlign='left'; ctx.fillText('outside cutoff',Math.min(X(cut)+6,x1-90),y1+10);
+    // grid
+    ctx.textAlign='right';
+    [-1,-0.5,0,0.5,1].forEach(u=>{ ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(x0,Y(u)); ctx.lineTo(x1,Y(u)); ctx.stroke(); ctx.fillStyle=C.ink2; ctx.fillText(String(u).replace('-','−'),x0-5,Y(u)); });
+    // Boltzmann weight, normalized to its peak, drawn above the well bottom
+    const N=400; let pk=0; const ws=[];
+    for(let i=0;i<=N;i++){ const r=LJ.xlo+(cut-LJ.xlo)*i/N, f=Math.exp(-(ljU(r)+1)/t); ws.push([r,f]); pk=Math.max(pk,f); }
+    const base=-1, hgt=1.6;
+    ctx.fillStyle=C['hl-pink']; ctx.globalAlpha=.55; ctx.beginPath(); ctx.moveTo(X(Math.max(rmin,ws[0][0])),Y(base));
+    ws.forEach(([r,f])=>{ if(r>=rmin) ctx.lineTo(X(r),Y(base+hgt*f/pk)); });
+    ctx.lineTo(X(cut),Y(base)); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+    // curves
+    const curve=(fn,col,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=dash?1.6:2.2; ctx.setLineDash(dash||[]); ctx.beginPath(); let started=false;
+      for(let i=0;i<=500;i++){ const r=rmin+(rmax-rmin)*i/500, u=fn(r); if(u>umax+0.05||u<umin-0.05){started=false;continue;} started?ctx.lineTo(X(r),Y(u)):ctx.moveTo(X(r),Y(u)); started=true; }
+      ctx.stroke(); ctx.setLineDash([]); };
+    if(LJ.approx){ curve(r=>-1+36*(r-1)**2,C.green,[6,4]); curve(r=>-1+36*(r-1)**2-252*(r-1)**3,C.purple,[2,3]); }
+    curve(ljU,C.ink);
+    // markers
+    const vline=(r,col,dash,lw)=>{ ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(X(r),y0); ctx.lineTo(X(r),y1); ctx.stroke(); ctx.setLineDash([]); };
+    vline(1,C.ink2,[3,3],1); vline(xc,C.red,[5,3],1.6); vline(xm,C.blue,[],1.8);
+    axes(ctx,x0,y0,x1,y1);
+    ctx.fillStyle=C.ink; ctx.textAlign='center';
+    for(let r=1;r<=rmax+1e-9;r+=0.25){ if(X(r)<x1-50) ctx.fillText(r.toFixed(2),X(r),y0+12); }
+    ctx.fillText('0.85',X(0.85),y0+12);
+    subText(ctx,'x / x_{0}',x1,y0+12,'right');
+  }
+  // x̄ vs T
+  { const {ctx,w,h}=fit($('ljT')); const x0=50,y0=h-24,x1=w-8,y1=12;
+    const pts=[]; for(let TT=1;TT<=100;TT+=1) pts.push([TT,(ljMean(kB*TT/LJ.u0,cut)-1)*100]);
+    const lin=TT=>ljCoef*kB*TT/LJ.u0*100;
+    const ymax=Math.max(lin(100),...pts.map(p=>p[1]))*1.08;
+    const X=TT=>x0+(x1-x0)*TT/100, Y=v=>y0-(y0-y1)*v/ymax;
+    ctx.textAlign='right';
+    for(let k=0;k<=4;k++){ const v=ymax*k/4; ctx.strokeStyle=C.rule; ctx.lineWidth=.6; ctx.beginPath(); ctx.moveTo(x0,Y(v)); ctx.lineTo(x1,Y(v)); ctx.stroke(); ctx.fillStyle=C.ink2; ctx.fillText(v.toFixed(1)+'%',x0-5,Y(v)); }
+    ctx.strokeStyle=C.red; ctx.lineWidth=1.6; ctx.setLineDash([5,3]); ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(100),Y(lin(100))); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle=C.blue; ctx.lineWidth=2; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))); ctx.stroke();
+    ctx.fillStyle=C.blue; ctx.beginPath(); ctx.arc(X(T),Y((xm-1)*100),4.5,0,7); ctx.fill();
+    axes(ctx,x0,y0,x1,y1);
+    ctx.fillStyle=C.ink; ctx.textAlign='center'; [0,20,40,60,80].forEach(v=>ctx.fillText(v,X(v),y0+12)); ctx.textAlign='right'; ctx.fillText('100 K',x1,y0+12);
+    ctx.textAlign='left'; ctx.fillStyle=C.ink2; ctx.fillText('(x̄ − x₀)/x₀ vs. T',x0+8,y1+2);
+  }
+  const dT=0.5, an=(ljMean(kB*(T+dT)/LJ.u0,cut)-ljMean(kB*Math.max(0.01,T-dT)/LJ.u0,cut))/(T+dT-Math.max(0.01,T-dT));
+  rows($('ljRead'),[
+    ['k<sub>B</sub>T / u<sub>0</sub>', t.toFixed(4)],
+    ['x̄ / x<sub>0</sub>, exact integral', xm.toFixed(5)],
+    ['x̄ / x<sub>0</sub>, part (c)', xc.toFixed(5)],
+    ['x̄ − x<sub>0</sub>, exact', ((xm-1)*LJ.x0*1000).toFixed(2)+' mÅ'],
+    ['α from (c), 1512 k<sub>B</sub>/(2·72² u<sub>0</sub>)', sci(ljCoef*kB/LJ.u0,3)+' K⁻¹'],
+    ['α from exact integral at this T', sci(an,3)+' K⁻¹'],
+    ['α measured (argon, 80 K)', '7 × 10⁻⁴ K⁻¹'],
+  ]);
+}
+$('ljTemp').oninput=drawLJ; $('ljCut').oninput=drawLJ;
+$('ljShowApprox').onclick=()=>{ LJ.approx=!LJ.approx; $('ljShowApprox').setAttribute('aria-pressed',LJ.approx); drawLJ(); };
+document.querySelectorAll('[data-ljt]').forEach(b=>b.onclick=()=>{ $('ljTemp').value=b.dataset.ljt; drawLJ(); });
 /* ================= boot ================= */
-function drawAll(){ drawSim(); drawGrow(); drawH(); drawZ(); drawLi(); drawToy(); drawE(); }
+function drawAll(){ drawSim(); drawGrow(); drawH(); drawZ(); drawLi(); drawToy(); drawE(); drawLJ(); }
 simInit();
 drawAll();
 requestAnimationFrame(simFrame);
