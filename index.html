@@ -283,7 +283,7 @@ footer{margin-top:90px; color:var(--ink2); font-size:.92rem; max-width:690px}
       <div class="controls">
         <div class="ctl">
           <label for="hT"><span>Temperature</span> <output id="hTo">5800 K</output></label>
-          <input type="range" id="hT" min="3.3" max="4.4" step="0.001" value="3.7634">
+          <input type="range" id="hT" min="3.3" max="4.4" step="any" value="3.7634280">
         </div>
         <div class="readout" id="hRead"></div>
       </div>
@@ -630,28 +630,33 @@ function drawH(){
   const r1=Math.exp(-(lv[1].E-lv[0].E)/kT), r2=Math.exp(-(lv[2].E-lv[0].E)/kT);
   const pops=[1,4*r1,9*r2];
   const {ctx,w,h}=fit($('hChart'));
-  const yE=E=>14+(h-40)*((-1.0-E)/(13.6-1.0+0.4));
-  const lx0=58, lx1=Math.min(w*0.46,260), bx0=lx1+26, bx1=w-10;
-  ctx.fillStyle=C.ink2; ctx.textAlign='right';
-  ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx0-8,h-10); ctx.lineTo(lx0-8,8); ctx.stroke();
+  const top=44, bot=h-40;                       // reserved: title above, tick labels below
+  const yE=E=>top+(bot-top)*((-1.51-E)/(13.6-1.51));
+  const narrow=w<520, lx0=66, lx1=narrow?Math.max(lx0+40,w*0.3):Math.min(w*0.42,250), bx0=lx1+(narrow?14:26), bx1=w-10;
+  // axis title, in its own band above the plot
+  ctx.font='italic 14px "Source Serif 4", Georgia, serif'; ctx.fillStyle=C.purple; ctx.textAlign='left';
+  { let t='population relative to ground state (log scale)'; if(ctx.measureText(t).width>bx1-bx0) t='population (log scale)'; ctx.fillText(t,bx0,13); }
+  ctx.font='12.5px "IBM Plex Sans", Arial, sans-serif';
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(lx0-8,bot+16); ctx.lineTo(lx0-8,top-16); ctx.stroke();
   // log bar axis
   const dmin=-22; const bxv=v=>bx0+(bx1-bx0)*(Math.max(dmin,Math.log10(v))-dmin)/(-dmin);
   ctx.strokeStyle=C.rule; ctx.lineWidth=.6;
-  for(let d=dmin;d<=0;d+=2){ const xx=bx0+(bx1-bx0)*(d-dmin)/(-dmin); ctx.beginPath(); ctx.moveTo(xx,8); ctx.lineTo(xx,h-22); ctx.stroke(); if(d%4===0||d===0){ctx.fillStyle=C.ink2; ctx.textAlign='center'; ctx.fillText(d===0?'1':'10'+String(d).split('').map(c=>SUP[c]).join(''),xx,h-10);} }
+  for(let d=dmin;d<=0;d+=2){ const xx=bx0+(bx1-bx0)*(d-dmin)/(-dmin); ctx.beginPath(); ctx.moveTo(xx,top-18); ctx.lineTo(xx,bot+18); ctx.stroke(); const lstep=(bx1-bx0)/11<20?8:4; if(d%lstep===0||d===0){ctx.fillStyle=C.ink2; ctx.textAlign='center'; ctx.fillText(d===0?'1':'10'+String(d).split('').map(c=>SUP[c]).join(''),xx,h-10);} }
   lv.forEach((L,i)=>{
     const y=yE(L.E);
-    ctx.fillStyle=C.ink; ctx.textAlign='right'; ctx.fillText(L.E+' eV',lx0-12,y);
+    ctx.fillStyle=C.ink; ctx.textAlign='right'; ctx.fillText(String(L.E).replace('-','−')+' eV',lx0-14,y);
     const seg=(lx1-lx0)/9;
     ctx.strokeStyle=C.ink; ctx.lineWidth=2;
     for(let k=0;k<L.g;k++){ ctx.beginPath(); ctx.moveTo(lx0+k*seg+2,y); ctx.lineTo(lx0+(k+1)*seg-2,y); ctx.stroke(); }
     ctx.fillStyle = i===1?C['hl-pink']:(i===0?C['hl-green']:C['hl-cyan']);
-    const bwid=bxv(pops[i])-bx0; ctx.fillRect(bx0,y-9,Math.max(1,bwid),18);
-    ctx.fillStyle=C.ink; ctx.textAlign='left';
-    const lab='n='+L.n+', g='+L.g+':  '+sci(pops[i]);
-    ctx.fillText(lab, Math.min(bx0+bwid+6, bx1-ctx.measureText(lab).width), y-17<10?y+19:y-17);
+    const bwid=Math.max(1,bxv(pops[i])-bx0); ctx.fillRect(bx0,y-10,bwid,20);
+    // label on the bar's own row: right of the bar if it fits, otherwise inside its right end
+    const lab='n = '+L.n+', g = '+L.g+':  '+sci(pops[i]);
+    const tw=ctx.measureText(lab).width;
+    ctx.fillStyle=C.ink;
+    if(bx0+bwid+8+tw<=bx1){ ctx.textAlign='left'; ctx.fillText(lab,bx0+bwid+8,y); }
+    else { ctx.textAlign='right'; ctx.fillText(lab,Math.max(bx0+tw+6,bx0+bwid-8),y); }
   });
-  ctx.font='italic 14px "Source Serif 4", Georgia, serif'; ctx.fillStyle=C.purple; ctx.textAlign='left';
-  ctx.fillText('population relative to ground state (log)',bx0,h-28>yE(-13.6)+24?h-30:12);
   rows($('hRead'),[
     ['k<sub>B</sub>T', kT.toFixed(3)+' eV'],
     ['ΔE / k<sub>B</sub>T for 1 → 2', (10.2/kT).toFixed(2)],
