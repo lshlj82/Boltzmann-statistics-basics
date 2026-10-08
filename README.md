@@ -39,7 +39,7 @@ python3 -m http.server 8000
 - Plain HTML, CSS, and JavaScript with Canvas 2D charts and an inline SVG illustration.
 - Fonts come from Google Fonts (Source Serif 4, IBM Plex Sans) and fall back to system fonts when offline.
 - The reservoir multiplicities use the Einstein-solid formula Ω(N, q) = (q + N − 1)! / [q! (N − 1)!], evaluated with a log-gamma function so that very large reservoirs don't overflow.
-- Supports light and dark mode, mobile layouts, keyboard focus, and `prefers-reduced-motion` (the simulation starts paused).
+- Supports light and dark mode (following the system setting, with a sun/moon button in the top-right corner to switch by hand), mobile layouts, keyboard focus, and `prefers-reduced-motion` (the simulation starts paused).
 - Energies are in units of ε unless labeled. k<sub>B</sub> = 8.617 × 10⁻⁵ eV/K.
 
 ## Reference
