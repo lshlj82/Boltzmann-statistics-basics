@@ -2,7 +2,7 @@
 
 An interactive web demo of the basic ideas and formalism of Boltzmann statistics, written for undergraduate statistical physics (Statistical Physics II, Chapter 6). It follows Prof. Sang Hoon Lee's lecture notes (Gyeongsang National University), which are based on Schroeder, *An Introduction to Thermal Physics*, §6.1–6.3.
 
-The demo is one self-contained `index.html` file. It needs no build step and no dependencies.
+The demo is one `index.html` file. It needs no build step.
 
 > **Author of the lecture notes:** Prof. Sang Hoon Lee, Department of Physics, Gyeongsang National University  
 > **Interactive demo:** created by **Claude Opus 5.5** (Anthropic) from Prof. Lee's lecture notes.
@@ -17,7 +17,7 @@ The demo is one self-contained `index.html` file. It needs no build step and no 
 | **Partition function** | Z for a two-state system, a toy 0/4ε/7ε atom, a harmonic oscillator, and hydrogen-like degenerate levels. Shows the limits Z → 1 as T → 0 and Z → number of states at high T. A slider shifts all energies by E<sub>0</sub> to show that probabilities don't change (also Problem 6.2). |
 | **Problem 6.11** | ⁷Li nuclear spin populations in the Purcell–Pound experiment. Reversing the field suddenly produces T = −300 K. |
 | **6.2 Averages and fluctuations** | The five-atom toy model from Problem 6.17, where you can move atoms between levels. A canonical-ensemble panel checks Ē = −∂ ln Z/∂β, the mean of E² from (1/Z) ∂²Z/∂β², and σ<sub>E</sub> = k<sub>B</sub>T √(C/k<sub>B</sub>) (Problems 6.16–6.18). You can also draw ensemble samples. |
-| **Problem 6.32: thermal expansion** | A classical argon atom in a Lennard-Jones well. Shows the Boltzmann-weighted position distribution, the quadratic and cubic Taylor approximations, and x̄ from the exact integral compared with x̄ = x<sub>0</sub> − (b/2a²) k<sub>B</sub>T. The predicted expansion coefficient, 1.26 × 10⁻³ K⁻¹, is compared with the measured 7 × 10⁻⁴ K⁻¹. |
+| **Problem 6.32: thermal expansion** | A classical argon atom in a Lennard-Jones well. Shows the Boltzmann-weighted position distribution, the quadratic and cubic Taylor approximations, and x̄ from the exact integral compared with x̄ = x<sub>0</sub> − (b/2a²) k<sub>B</sub>T. The predicted expansion coefficient, 1.26 × 10⁻³ K⁻¹, is compared with the measured 7 × 10⁻⁴ K⁻¹. An animated crystal of argon atoms shows the same result: the atoms vibrate with amplitude √(k<sub>B</sub>T/a), and the crystal grows beyond its T → 0 size by x̄/x<sub>0</sub>. In a harmonic well it vibrates without expanding. |
 
 ## Running locally
 
@@ -38,6 +38,7 @@ python3 -m http.server 8000
 
 - Plain HTML, CSS, and JavaScript with Canvas 2D charts and an inline SVG illustration.
 - Fonts come from Google Fonts (Source Serif 4, IBM Plex Sans) and fall back to system fonts when offline.
+- Equations are typeset with [MathJax 3](https://www.mathjax.org/) (version 3.2.2, loaded from jsDelivr), following standard conventions: italic variables, upright units, numbers and descriptive subscripts (k<sub>B</sub>, U<sub>total</sub>). Without a network connection the equations appear as raw TeX, while the interactive panels still work.
 - The reservoir multiplicities use the Einstein-solid formula Ω(N, q) = (q + N − 1)! / [q! (N − 1)!], evaluated with a log-gamma function so that very large reservoirs don't overflow.
 - Supports light and dark mode (following the system setting, with a sun/moon button in the top-right corner to switch by hand), mobile layouts, keyboard focus, and `prefers-reduced-motion` (the simulation starts paused).
 - Energies are in units of ε unless labeled. k<sub>B</sub> = 8.617 × 10⁻⁵ eV/K.
