@@ -492,7 +492,7 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]},
           <input type="range" id="ljTemp" min="1" max="100" step="1" value="5">
         </div>
         <div class="ctl">
-          <label for="ljCut"><span>Outer cutoff x<sub>max</sub> / x<sub>0</sub></span> <output id="ljCo">1.50</output></label>
+          <label for="ljCut"><span>Outer cutoff \(x_\text{max}/x_0\)</span> <output id="ljCo">1.50</output></label>
           <input type="range" id="ljCut" min="1.25" max="2.5" step="0.01" value="1.5">
         </div>
         <div class="readout" id="ljRead"></div>
@@ -511,8 +511,25 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]},
       </div>
     </div>
     <canvas id="ljLat" style="height:250px" aria-label="Animated lattice of argon atoms vibrating thermally, with the crystal size at zero temperature for comparison"></canvas>
-    <div class="readout" id="latRead" style="margin-top:8px"></div>
-    <p class="caption">Argon atoms vibrating thermally at the temperature and cutoff set above. The mean spacing between neighbors is \(\bar{x}\) from the exact integral, and each atom's vibration amplitude is drawn as \(\sqrt{k_\mathrm{B}T/a}\), the harmonic estimate. The dashed box is the crystal as \(T\to0\), and the solid box is its size now. With the harmonic well the atoms vibrate just as much but the box stays the same size. Displacements are to scale unless magnified.</p>
+    <div class="cols" style="margin-top:10px">
+      <div class="controls">
+        <div class="ctl">
+          <label for="latTemp"><span>Temperature</span> <output id="latTo">5 K</output></label>
+          <input type="range" id="latTemp" min="1" max="100" step="1" value="5">
+        </div>
+        <div class="ctl">
+          <label for="latCut"><span>Outer cutoff \(x_\text{max}/x_0\)</span> <output id="latCo">1.50</output></label>
+          <input type="range" id="latCut" min="1.25" max="2.5" step="0.01" value="1.5">
+        </div>
+      </div>
+      <div class="readout" id="latRead">
+        <div><span>Mean spacing \(\bar{x}/x_0\)</span><b id="latR1"></b></div>
+        <div><span>Change in length</span><b id="latR2"></b></div>
+        <div><span>Vibration amplitude \(\sqrt{k_\mathrm{B}T/a}\,/\,x_0\)</span><b id="latR3"></b></div>
+        <div><span>Well</span><b id="latR4"></b></div>
+      </div>
+    </div>
+    <p class="caption">Argon atoms vibrating thermally. The temperature and cutoff sliders here move together with the ones in the panel above. The mean spacing between neighbors is \(\bar{x}\) from the exact integral, and each atom's vibration amplitude is drawn as \(\sqrt{k_\mathrm{B}T/a}\), the harmonic estimate. The dashed box is the crystal as \(T\to0\), and the solid box is its size now. With the harmonic well the atoms vibrate just as much but the box stays the same size. Displacements are to scale unless magnified.</p>
   </div>
 </section>
 
@@ -1042,9 +1059,14 @@ function drawLJ(){
     ['α measured (argon, 80 K)', '7 × 10⁻⁴ K⁻¹'],
   ]);
 }
-$('ljTemp').oninput=()=>{drawLJ();drawLat();}; $('ljCut').oninput=()=>{drawLJ();drawLat();};
+function syncLat(from){ // keep the two panels' sliders together
+  if(from==='lat'){ $('ljTemp').value=$('latTemp').value; $('ljCut').value=$('latCut').value; }
+  else { $('latTemp').value=$('ljTemp').value; $('latCut').value=$('ljCut').value; }
+  $('latTo').textContent=$('latTemp').value+' K'; $('latCo').textContent=(+$('latCut').value).toFixed(2);
+  drawLJ(); drawLat(); }
+$('ljTemp').oninput=()=>syncLat('lj'); $('ljCut').oninput=()=>syncLat('lj');
 $('ljShowApprox').onclick=()=>{ LJ.approx=!LJ.approx; $('ljShowApprox').setAttribute('aria-pressed',LJ.approx); drawLJ(); };
-document.querySelectorAll('[data-ljt]').forEach(b=>b.onclick=()=>{ $('ljTemp').value=b.dataset.ljt; drawLJ(); drawLat(); });
+document.querySelectorAll('[data-ljt]').forEach(b=>b.onclick=()=>{ $('ljTemp').value=b.dataset.ljt; syncLat('lj'); });
 /* ================= boot ================= */
 /* ---- Problem 6.32: the same physics in a crystal (animated lattice) ---- */
 const LAT={harm:false,mag:false,run:!reduce,visible:false,t0:performance.now(),key:'',xm:1,
@@ -1067,12 +1089,10 @@ function drawLat(now){
     if(r<ROWS-1){ctx.beginPath();ctx.moveTo(...P[k]);ctx.lineTo(...P[k+COLS]);ctx.stroke();} }
   ctx.fillStyle=C.blue; P.forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,base*0.2,0,7);ctx.fill();});
   const dx=LAT.harm?0:(xm-1);
-  rows($('latRead'),[
-    ['Mean spacing x̄ / x<sub>0</sub>', (1+dx).toFixed(5)],
-    ['Change in length', (dx>=0?'+':'')+(dx*100).toFixed(3)+' %'],
-    ['Vibration amplitude √(k<sub>B</sub>T/a) / x<sub>0</sub>', Math.sqrt(t/72).toFixed(4)],
-    ['Well', LAT.harm?'harmonic: vibrates, does not expand':'Lennard-Jones: vibrates and expands'],
-  ]);
+  $('latR1').textContent=(1+dx).toFixed(5);
+  $('latR2').textContent=(dx>=0?'+':'')+(dx*100).toFixed(3)+' %';
+  $('latR3').textContent=Math.sqrt(t/72).toFixed(4);
+  $('latR4').textContent=LAT.harm?'harmonic: vibrates, does not expand':'Lennard-Jones: vibrates and expands';
 }
 function latLoop(now){ if(LAT.run&&LAT.visible) drawLat(now); requestAnimationFrame(latLoop); }
 new IntersectionObserver(es=>{LAT.visible=es[0].isIntersecting;}).observe($('ljLat'));
@@ -1080,6 +1100,7 @@ $('latHarm').onclick=()=>{ LAT.harm=!LAT.harm; $('latHarm').setAttribute('aria-p
 $('latMag').onclick=()=>{ LAT.mag=!LAT.mag; $('latMag').setAttribute('aria-pressed',LAT.mag); drawLat(); };
 function setLatRun(r){ LAT.run=r; $('latRun').textContent=r?'Pause':'Play'; $('latRun').setAttribute('aria-pressed',!r); drawLat(); }
 $('latRun').onclick=()=>setLatRun(!LAT.run); setLatRun(LAT.run);
+$('latTemp').oninput=()=>syncLat('lat'); $('latCut').oninput=()=>syncLat('lat');
 requestAnimationFrame(latLoop);
 
 function drawAll(){ drawSim(); drawGrow(); drawH(); drawZ(); drawLi(); drawToy(); drawE(); drawLJ(); drawLat(); }
