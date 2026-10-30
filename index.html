@@ -67,7 +67,7 @@ section{margin-top:84px}
 .lede{font-size:1.15rem; max-width:640px}
 .margin-note{color:var(--purple); border-left:3px solid var(--hl-pink); padding-left:14px}
 /* formula boxes, as in the notes */
-.fbox{display:inline-block; padding:.45em .9em; border-radius:12px; border:6px solid var(--hl-pink); background:var(--panel); font-size:1.12rem; margin:.3em 0 1em}
+.fbox{display:inline-block; max-width:100%; overflow-x:auto; overflow-y:hidden; vertical-align:top; padding:.45em .9em; border-radius:12px; border:6px solid var(--hl-pink); background:var(--panel); font-size:1.12rem; margin:.3em 0 1em}
 .fbox.green{border-color:var(--hl-green)} .fbox.cyan{border-color:var(--hl-cyan)}
 .frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 .15em; line-height:1.2}
 .frac>span:first-child{border-bottom:1.3px solid currentColor; padding:0 .2em}
@@ -544,7 +544,19 @@ window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["\\[","\\]"]]},
 "use strict";
 const $ = id => document.getElementById(id);
 const kB = 8.617333e-5;
-const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motionMQ = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+const reduce = !!(motionMQ && motionMQ.matches);
+// An animation loop that runs only while it is switched on, its figure is on screen and the tab is visible.
+// Otherwise no frame is requested at all; kick() restarts it.
+function makeLoop(el, isOn, frame){
+  let id=0, vis=!('IntersectionObserver' in window);
+  const live=()=>isOn() && vis && !document.hidden;
+  const tick=now=>{ id=0; if(!live()) return; frame(now); id=requestAnimationFrame(tick); };
+  const kick=()=>{ if(!id && live()) id=requestAnimationFrame(tick); };
+  if(!vis) new IntersectionObserver(es=>{ vis=es[es.length-1].isIntersecting; kick(); }).observe(el);
+  document.addEventListener('visibilitychange', kick);
+  return {kick, visible:()=>vis};
+}
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 let C = {};
 function readColors(){ ['--ink','--ink2','--rule','--paper','--panel','--bar','--bar2','--red','--blue','--green','--purple','--hl-pink','--hl-green','--hl-cyan','--hl-peach'].forEach(k=>C[k.slice(2)]=css(k)); }
@@ -600,6 +612,7 @@ function axes(ctx,x0,y0,x1,y1){
 /* ================= 6.0 live simulation ================= */
 const simSizes=[20,80,300,1000];
 const sim={N:80, rho:1, q:null, Q:0, iso:false, hist:[], count:0, running:!reduce, frozenN:0};
+const motionHeld={sim:false, lat:false}; // animations paused by a runtime reduced-motion change
 function simInit(){
   const N=sim.N, Q=Math.round(sim.rho*N);
   sim.Q=Q; sim.q=new Int32Array(N+1);
@@ -672,14 +685,13 @@ function drawSim(){
   ]);
 }
 function simFrame(){
-  if (sim.running){
-    const steps = 3000;
-    for(let s=0;s<steps;s++){ simStep(); const n=sim.q[0]; if(n<64){sim.hist[n]++;} sim.count++; }
-    drawSim();
-  }
-  requestAnimationFrame(simFrame);
+  const steps = 3000;
+  for(let s=0;s<steps;s++){ simStep(); const n=sim.q[0]; if(n<64){sim.hist[n]++;} sim.count++; }
+  drawSim();
 }
-$('simPlay').onclick=()=>{ sim.running=!sim.running; $('simPlay').textContent=sim.running?'Pause':'Run'; $('simPlay').setAttribute('aria-pressed',sim.running); drawSim(); };
+const simLoop = makeLoop($('simStrip').closest('.lab'), ()=>sim.running, simFrame);
+function setSimRun(r){ sim.running=r; $('simPlay').textContent=r?'Pause':'Run'; $('simPlay').setAttribute('aria-pressed',r); drawSim(); simLoop.kick(); }
+$('simPlay').onclick=()=>{ motionHeld.sim=false; setSimRun(!sim.running); };
 $('simIso').onclick=()=>{ sim.iso=!sim.iso; $('simIso').setAttribute('aria-pressed',sim.iso); $('simIso').textContent=sim.iso?'Reconnect to reservoir':'Isolate the atom'; simClear(); drawSim(); };
 $('simReset').onclick=()=>{ simClear(); drawSim(); };
 $('simN').oninput=e=>{ sim.N=simSizes[+e.target.value]; $('simNo').textContent=sim.N; simInit(); drawSim(); };
@@ -777,10 +789,13 @@ document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ $('hT').value=M
 function levels(sys){
   if(sys==='two') return [{E:0,g:1},{E:1,g:1}];
   if(sys==='toy') return [{E:0,g:1},{E:4,g:1},{E:7,g:1}];
-  if(sys==='osc') return Array.from({length:200},(_,n)=>({E:n,g:1}));
+  if(sys==='osc'){ // levels 0, ε, 2ε, ...: only the first 200 are listed, for drawing and sampling;
+    const L=Array.from({length:200},(_,n)=>({E:n,g:1})); L.osc=true; return L; } // Z and averages use the infinite sums
   if(sys==='hyd') return Array.from({length:8},(_,i)=>{const n=i+1; return {E:(1-1/(n*n))*4/3,g:n*n,n};});
 }
-function Zof(L,b,E0=0){ let z=0; for(const l of L) z+=l.g*Math.exp(-b*(l.E+E0)); return z; }
+// Harmonic oscillator, all levels: Z = Σ e^{-βnε} = 1/(1 − e^{-βε}), with expm1 so high T stays accurate
+const oscZ = b => -1/Math.expm1(-b);
+function Zof(L,b,E0=0){ if(L.osc) return Math.exp(-b*E0)*oscZ(b); let z=0; for(const l of L) z+=l.g*Math.exp(-b*(l.E+E0)); return z; }
 function drawZ(){
   const sys=$('zSys').value, L=levels(sys), kT=Math.pow(10,+$('zkT').value), E0=+$('zE0').value, b=1/kT;
   $('zkTo').textContent=kT<10?kT.toFixed(2):kT.toFixed(1); $('zE0o').textContent=E0.toFixed(1);
@@ -815,7 +830,7 @@ function drawZ(){
   ctx.textAlign='right'; ctx.fillStyle=C.ink2; subText(ctx,'E(s) / ε',x1,h-10,'right');
   // Z vs T
   { const g=fit($('zT')), c=g.ctx; const xa=50,ya=g.h-22,xb=g.w-8,yb=10;
-    const total=L.reduce((a,l)=>a+l.g,0);
+    const total=L.osc?Infinity:L.reduce((a,l)=>a+l.g,0);
     const zs=[]; for(let i=0;i<=200;i++){ const lk=-1.3+3*i/200; zs.push([lk,Zof(L,1/Math.pow(10,lk),0)]); }
     const zmax=Math.max(...zs.map(p=>p[1]))*1.08;
     const XT=lk=>xa+(xb-xa)*(lk+1.3)/3, YT=z=>ya-(ya-yb)*z/zmax;
@@ -829,7 +844,7 @@ function drawZ(){
     c.textAlign='right'; c.fillStyle=C.ink2; subText(c,'Z (with E_{0} = 0) vs. k_{B}T / ε, log scale',xa+10,yb+2,'left');
   }
   const P=L.map(l=>l.g*Math.exp(-b*(l.E+E0))/Z);
-  const r=[['Z', sci(Z,4)],['Z with E₀ = 0', sci(Z0,4)],['ratio = e<sup>−E₀/k<sub>B</sub>T</sup>', sci(Z/Z0,4)]];
+  const r=[[L.osc?'Z = e<sup>−E₀/k<sub>B</sub>T</sup>/(1 − e<sup>−ε/k<sub>B</sub>T</sup>)':'Z', sci(Z,4)],['Z with E₀ = 0', sci(Z0,4)],['ratio = e<sup>−E₀/k<sub>B</sub>T</sup>', sci(Z/Z0,4)]];
   const lim = sys==='osc'?5:L.length;
   for(let i=0;i<lim;i++){
     const l=L[i]; const lab = sys==='hyd' ? `P(level n=${l.n}, g=${l.g})` : `P(E = ${l.E}ε)`;
@@ -916,7 +931,9 @@ buildToy();
 /* ================= canonical ensemble ================= */
 let samp=null;
 function eStats(L,kT){
-  const b=1/kT; let z=0,e1=0,e2=0;
+  const b=1/kT;
+  if(L.osc){ const nb=1/Math.expm1(b); return {Z:oscZ(b),E:nb,E2:nb*(1+2*nb),sig:Math.sqrt(nb*(1+nb))}; } // exact, all levels
+  let z=0,e1=0,e2=0;
   for(const l of L){ const w=l.g*Math.exp(-b*l.E); z+=w; e1+=l.E*w; e2+=l.E*l.E*w; }
   return {Z:z,E:e1/z,E2:e2/z,sig:Math.sqrt(Math.max(0,e2/z-(e1/z)**2))};
 }
@@ -1094,20 +1111,29 @@ function drawLat(now){
   $('latR3').textContent=Math.sqrt(t/72).toFixed(4);
   $('latR4').textContent=LAT.harm?'harmonic: vibrates, does not expand':'Lennard-Jones: vibrates and expands';
 }
-function latLoop(now){ if(LAT.run&&LAT.visible) drawLat(now); requestAnimationFrame(latLoop); }
-new IntersectionObserver(es=>{LAT.visible=es[0].isIntersecting;}).observe($('ljLat'));
+const latLoop = makeLoop($('ljLat'), ()=>LAT.run, drawLat);
 $('latHarm').onclick=()=>{ LAT.harm=!LAT.harm; $('latHarm').setAttribute('aria-pressed',LAT.harm); drawLat(); };
 $('latMag').onclick=()=>{ LAT.mag=!LAT.mag; $('latMag').setAttribute('aria-pressed',LAT.mag); drawLat(); };
-function setLatRun(r){ LAT.run=r; $('latRun').textContent=r?'Pause':'Play'; $('latRun').setAttribute('aria-pressed',!r); drawLat(); }
-$('latRun').onclick=()=>setLatRun(!LAT.run); setLatRun(LAT.run);
+function setLatRun(r){ LAT.run=r; $('latRun').textContent=r?'Pause':'Play'; $('latRun').setAttribute('aria-pressed',!r); drawLat(); latLoop.kick(); }
+$('latRun').onclick=()=>{ motionHeld.lat=false; setLatRun(!LAT.run); }; setLatRun(LAT.run);
 $('latTemp').oninput=()=>syncLat('lat'); $('latCut').oninput=()=>syncLat('lat');
-requestAnimationFrame(latLoop);
 
 function drawAll(){ drawSim(); drawGrow(); drawH(); drawZ(); drawLi(); drawToy(); drawE(); drawLJ(); drawLat(); }
 simInit();
 drawAll();
-requestAnimationFrame(simFrame);
-let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(drawAll,80); });
+simLoop.kick();
+// Reduced motion switched on at runtime pauses both animations; switching it off resumes only what it
+// paused (pressing Run/Play or Pause in between takes precedence).
+if(motionMQ) motionMQ.addEventListener('change',e=>{
+  if(e.matches){ if(sim.running){ motionHeld.sim=true; setSimRun(false); } if(LAT.run){ motionHeld.lat=true; setLatRun(false); } }
+  else { if(motionHeld.sim) setSimRun(true); if(motionHeld.lat) setLatRun(true); motionHeld.sim=motionHeld.lat=false; }
+});
+// Wide formulas scroll inside their box on narrow screens; make such boxes reachable by keyboard.
+function markScrollers(){ document.querySelectorAll('.fbox').forEach(b=>{
+  if(b.scrollWidth>b.clientWidth+1){ b.tabIndex=0; b.setAttribute('role','region'); b.setAttribute('aria-label','Formula, scrolls sideways'); }
+  else { b.removeAttribute('tabindex'); b.removeAttribute('role'); b.removeAttribute('aria-label'); } }); }
+window.addEventListener('load',()=>{ const mj=window.MathJax; (mj&&mj.startup&&mj.startup.promise||Promise.resolve()).then(markScrollers); });
+let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ drawAll(); markScrollers(); },80); });
 if(window.matchMedia){ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ readColors(); drawAll(); }); }
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(drawAll);
 new MutationObserver(()=>{ readColors(); drawAll(); }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
